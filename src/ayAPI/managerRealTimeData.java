@@ -16,28 +16,26 @@ import com.ib.controller.ApiController.ITimeHandler;
 // RealTimeBars Class is an implementation of the 
 // IB API EWrapper class
 
-public class RealTimeBars implements EWrapper
+public class managerRealTimeData implements EWrapper
 {
-	
 	private int nextOrderID = 0;// Keep track of the next ID
 	private EClientSocket client = null;// The IB API Client Socket object
 	
-	private fiveSec[] arrFiveSec;
-	private int countClass;
-	private oneMin oneMinObj;
-	private final int NUMBER_OF_RECORDS;
+	private fiveSec[] arrFiveSec;//array to hold all 5-sec values.
+	private int countResponseFromTws;
+	private barByInterval barObj;
+	private final int NUMBER_OF_RECORDS_BY_INTERVAL;
 
-	
-	public RealTimeBars(String symbol, int intervalGraph)
+	public managerRealTimeData(String symbol, int intervalGraph)
 	{
-		this.NUMBER_OF_RECORDS =  intervalGraph*60/5;
-		arrFiveSec = new fiveSec[this.NUMBER_OF_RECORDS];
-		countClass = 0;
+		this.NUMBER_OF_RECORDS_BY_INTERVAL =  intervalGraph*60/5;
+		arrFiveSec = new fiveSec[this.NUMBER_OF_RECORDS_BY_INTERVAL];
+		countResponseFromTws = 0;
 		
-		getBarsByInterval(symbol,intervalGraph);
+		getBarsByInterval(symbol);
 	} 
 
-	public void getBarsByInterval(String symbol, int intervalGraph)
+	public void getBarsByInterval(String symbol)
 	{
 		client = new EClientSocket (this);// Create a new EClientSocket object
 		client.eConnect (null, 7496, 0);// Connect to the TWS or IB Gateway application
@@ -52,6 +50,7 @@ public class RealTimeBars implements EWrapper
 			e.printStackTrace ();
 		};
 		
+		//TODO- fix to handle with 5 min bars
 		waitForMin();//sync timer
 		
 		// Create a new contract
@@ -68,6 +67,9 @@ public class RealTimeBars implements EWrapper
 
 	public void waitForMin()
 	{
+		//int sec = 1466855590;
+		//long mili = sec*1000L;
+		
 		long currentDateTime = System.currentTimeMillis();
 		System.out.println(currentDateTime);
 		
@@ -94,17 +96,21 @@ public class RealTimeBars implements EWrapper
 
 		try
 		{
-			System.out.println("realtimeBar:" + time + "," + open + "," + high + "," + low + "," + close + ",volume: " +volume + ", counter:"+countClass);
+			System.out.println("realtimeBar:" + time + "," + open + "," + high + "," + low + "," + close + ",volume: " +volume + ", counter:"+countResponseFromTws);
 			
-			fiveSecObj = new fiveSec(time,open,high,low,close,volume,countClass);
-			arrFiveSec[countClass] = fiveSecObj;
-			countClass++;
-			if (countClass == NUMBER_OF_RECORDS)
+			fiveSecObj = new fiveSec(time,open,high,low,close,volume,countResponseFromTws);
+			arrFiveSec[countResponseFromTws] = fiveSecObj;
+			countResponseFromTws++;
+			
+			if (countResponseFromTws == NUMBER_OF_RECORDS_BY_INTERVAL)
 			{
-				oneMinObj = getOneMin();
 				
-				System.err.println("oneMin: high:"+ oneMinObj.getHigh() +" , low: "+oneMinObj.getLow()+" ,open: "+oneMinObj.getOpen()+" , close: "+oneMinObj.getClose()+" , vol: "+oneMinObj.getVolume());
-				countClass = 0;	
+				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time);//make the bar values
+				//barObj = getOneMin();
+				
+				System.err.println("oneMin: high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
+				countResponseFromTws = 0;	
+				//sent to socket-client
 			}
 		}
 		catch (Exception e)
@@ -112,9 +118,9 @@ public class RealTimeBars implements EWrapper
 			e.printStackTrace ();
 		}
 	}
-	private oneMin getOneMin()
+	private barByInterval getOneMin()
 	{
-		oneMin tempOne;
+		barByInterval tempOne;
 
 		
 		double open = arrFiveSec[0].getOpen();
@@ -124,7 +130,7 @@ public class RealTimeBars implements EWrapper
 		long volumeSum = arrFiveSec[0].getVolume();
 		
 
-		for (int i=1;i<NUMBER_OF_RECORDS; i++)
+		for (int i=1;i<NUMBER_OF_RECORDS_BY_INTERVAL; i++)
 		{
 			volumeSum = volumeSum +arrFiveSec[i].getVolume();
 			
@@ -138,7 +144,7 @@ public class RealTimeBars implements EWrapper
 			}
 		}
 
-		tempOne = new oneMin(1466450000,open,high,low,close,volumeSum*100);
+		tempOne = new barByInterval(1466450000,open,high,low,close,volumeSum*100);
 		return tempOne;
 
 	}
