@@ -25,9 +25,14 @@ public class managerRealTimeData implements EWrapper
 	private int countResponseFromTws;
 	private barByInterval barObj;
 	private final int NUMBER_OF_RECORDS_BY_INTERVAL;
+	private final int INTERVAL_GRAPH;
+	private boolean isSync;
+	//private long currentTime=0;
 
 	public managerRealTimeData(String symbol, int intervalGraph)
 	{
+		this.isSync = false;
+		this.INTERVAL_GRAPH = intervalGraph;
 		this.NUMBER_OF_RECORDS_BY_INTERVAL =  intervalGraph*60/5;
 		arrFiveSec = new fiveSec[this.NUMBER_OF_RECORDS_BY_INTERVAL];
 		countResponseFromTws = 0;
@@ -43,15 +48,13 @@ public class managerRealTimeData implements EWrapper
 		
 		try // Pause here for connection to complete
 		{
-			// Thread.sleep (1000);
+			// Thread.sleep(1000);//one sec
 			while (! (client.isConnected()));
 		} catch (Exception e) 
 		{
 			e.printStackTrace ();
-		};
+		}
 		
-		//TODO- fix to handle with 5 min bars
-		waitForMin();//sync timer
 		
 		// Create a new contract
 		Contract contract = new Contract ();
@@ -63,35 +66,33 @@ public class managerRealTimeData implements EWrapper
 		Vector<TagValue> realTimeBarsOptions = new Vector<TagValue>();// Create a TagValue list
 		
 		client.reqRealTimeBars(0, contract,5,"TRADES",false,realTimeBarsOptions);// will be returned via the realtimeBar method
+	
 	} 
 
-	public void waitForMin()
-	{
-		//int sec = 1466855590;
-		//long mili = sec*1000L;
-		
-		long currentDateTime = System.currentTimeMillis();
-		System.out.println(currentDateTime);
-		
-		int seconds = (int) (currentDateTime / 1000) % 60 ;
-		int minutesStart = (int) ((currentDateTime / (1000*60)) % 60);
-		System.out.println("sec:"+seconds);
-		System.out.println("min:"+minutesStart);
-		
-		while(true)
-		{
-			currentDateTime = System.currentTimeMillis();
-			int minutesUpdate = (int) ((currentDateTime / (1000*60)) % 60);
-			if (minutesUpdate!=minutesStart)
-			{
-				System.err.println("one min more:"+minutesUpdate);
-				break;
-			}	
-		}		
-		
-	}
 	public void realtimeBar(int reqId, long time, double open, double high, double low, double close, long volume, double wap, int count)
 	{
+		if (!this.isSync)//sync to system time
+		{
+			long mili = time*1000L;
+			int secondsStart = (int) (mili / 1000) % 60 ;
+			int minutesStart = (int) ((mili / (1000*60)) % 60);
+			
+			if ((minutesStart % this.INTERVAL_GRAPH)==0)
+			{
+				if (secondsStart == 0)
+				{
+					this.isSync = true;
+					System.out.println("is sync!");
+					
+				}
+				else
+					return;
+			}
+			else
+				return;
+	
+		}
+		
 		fiveSec fiveSecObj;
 
 		try
@@ -106,11 +107,11 @@ public class managerRealTimeData implements EWrapper
 			{
 				
 				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time);//make the bar values
-				//barObj = getOneMin();
 				
-				System.err.println("oneMin: high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
+				System.err.println("barByInterval: barSize:"+this.INTERVAL_GRAPH+", high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
+				System.err.println(barObj.convertToJSON());
 				countResponseFromTws = 0;	
-				//sent to socket-client
+				//TODO-sent to socket-client
 			}
 		}
 		catch (Exception e)
@@ -118,35 +119,12 @@ public class managerRealTimeData implements EWrapper
 			e.printStackTrace ();
 		}
 	}
-	private barByInterval getOneMin()
-	{
-		barByInterval tempOne;
-
+	public void currentTime(long time)
+	{	
+		long currentDateTime = time*1000L;
 		
-		double open = arrFiveSec[0].getOpen();
-		double high = arrFiveSec[0].getHigh();
-		double low = arrFiveSec[0].getLow();
-		double close = arrFiveSec[11].getClose();
-		long volumeSum = arrFiveSec[0].getVolume();
+		System.out.println("corrent time: "+ currentDateTime);
 		
-
-		for (int i=1;i<NUMBER_OF_RECORDS_BY_INTERVAL; i++)
-		{
-			volumeSum = volumeSum +arrFiveSec[i].getVolume();
-			
-			if (arrFiveSec[i].getHigh()>high)
-			{
-				high = arrFiveSec[i].getHigh();
-			}
-			if (arrFiveSec[i].getLow()<low)
-			{
-				low = arrFiveSec[i].getLow();
-			}
-		}
-
-		tempOne = new barByInterval(1466450000,open,high,low,close,volumeSum*100);
-		return tempOne;
-
 	}
 	
 	
@@ -185,10 +163,7 @@ public class managerRealTimeData implements EWrapper
 	{
 	}
 
-	public void currentTime(long time)
-	{
-		System.out.println(time);
-	}
+	
 
 	public void displayGroupList(int requestId, String contraftInfo)
 	{

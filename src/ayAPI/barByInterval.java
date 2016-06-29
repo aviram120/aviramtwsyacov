@@ -1,5 +1,8 @@
 package ayAPI;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class barByInterval {
 
 	
@@ -23,13 +26,34 @@ public class barByInterval {
 		this.close = close;
 		this.volume = volum;		
 	}
+	
+	public String convertToJSON()
+	{
+		JSONObject obj = new JSONObject();
 
+	      try {
+			obj.put("time", this.time);
+			obj.put("open", this.open);	
+			obj.put("high", this.high);	
+			obj.put("low", this.low);	
+			obj.put("close", this.close);	
+			obj.put("volume", this.volume);	
+			obj.put("type", this.type);	
+		    
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	      
+	   return obj.toString(); 
+	      
+	}
+	
 	public barByInterval(fiveSec[] arrFiveSec,int interval,long time)
 	{		
 		double open = arrFiveSec[0].getOpen();
 		double high = arrFiveSec[0].getHigh();
 		double low = arrFiveSec[0].getLow();
-		double close = arrFiveSec[interval].getClose();
+		double close = arrFiveSec[interval-1].getClose();
 		long volumeSum = arrFiveSec[0].getVolume();
 		
 
@@ -73,7 +97,7 @@ public class barByInterval {
 	
 	}
 
-
+	
 
 	public long getTime() {
 		return time;
