@@ -10,7 +10,9 @@ public class main {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		
-		managerRealTimeData instance = new managerRealTimeData("spy",1);// Create an instance	
+		int port = 6066;
+		int inteval = 1;//in mintues
+		managerRealTimeData instance = new managerRealTimeData("spy",inteval,port);// Create an instance	
 		
 	}
 }

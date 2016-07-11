@@ -1,5 +1,12 @@
 package ayAPI;
 
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Vector;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
@@ -27,10 +34,19 @@ public class managerRealTimeData implements EWrapper
 	private final int NUMBER_OF_RECORDS_BY_INTERVAL;
 	private final int INTERVAL_GRAPH;
 	private boolean isSync;
-	//private long currentTime=0;
+	
+	
+	private ServerSocket serverSocket;
+	Socket server;
+	OutputStream outToServer;
+	DataOutputStream out;
+	
 
-	public managerRealTimeData(String symbol, int intervalGraph)
+	public managerRealTimeData(String symbol, int intervalGraph, int port)
 	{
+		
+		//makeSocketConnection(port);
+		
 		this.isSync = false;
 		this.INTERVAL_GRAPH = intervalGraph;
 		this.NUMBER_OF_RECORDS_BY_INTERVAL =  intervalGraph*60/5;
@@ -40,6 +56,26 @@ public class managerRealTimeData implements EWrapper
 		getBarsByInterval(symbol);
 	} 
 
+	public void newOrder(EClientSocket c)
+	{
+		
+		Contract contract = new Contract();
+		Order order = new Order();
+	
+		 
+		contract.m_symbol = "SPY";     // For combo order use “USD” as the symbol value all the time
+		contract.m_secType = "STK";   // BAG is the security type for COMBO order
+		contract.m_exchange = "SMART";
+		contract.m_currency = "USD";
+
+		 
+		order.m_action = "BUY";
+		order.m_totalQuantity = 1;
+		order.m_orderType = "STP";
+		order.m_auxPrice = 220;
+
+		c.placeOrder(nextOrderID,contract,order);
+	}
 	public void getBarsByInterval(String symbol)
 	{
 		client = new EClientSocket (this);// Create a new EClientSocket object
@@ -55,7 +91,10 @@ public class managerRealTimeData implements EWrapper
 			e.printStackTrace ();
 		}
 		
+		client.reqIds(100);
+		newOrder(client);
 		
+		/*
 		// Create a new contract
 		Contract contract = new Contract ();
 		contract.m_symbol = symbol;
@@ -66,7 +105,7 @@ public class managerRealTimeData implements EWrapper
 		Vector<TagValue> realTimeBarsOptions = new Vector<TagValue>();// Create a TagValue list
 		
 		client.reqRealTimeBars(0, contract,5,"TRADES",false,realTimeBarsOptions);// will be returned via the realtimeBar method
-	
+	*/
 	} 
 
 	public void realtimeBar(int reqId, long time, double open, double high, double low, double close, long volume, double wap, int count)
@@ -108,9 +147,16 @@ public class managerRealTimeData implements EWrapper
 				
 				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time);//make the bar values
 				
+				
 				System.err.println("barByInterval: barSize:"+this.INTERVAL_GRAPH+", high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
-				System.err.println(barObj.convertToJSON());
-				countResponseFromTws = 0;	
+				//System.err.println(barObj.convertToJSON());
+				
+				countResponseFromTws = 0;
+				
+				
+				out = new DataOutputStream(outToServer);
+				out.writeUTF(barObj.convertToJSON());	
+				
 				//TODO-sent to socket-client
 			}
 		}
@@ -127,7 +173,41 @@ public class managerRealTimeData implements EWrapper
 		
 	}
 	
-	
+	private void makeSocketConnection(int port)
+	{
+		try {
+			serverSocket = new ServerSocket(port);
+			serverSocket.setSoTimeout(10000);
+		} catch (SocketException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		while(true)
+		{
+			try
+			{
+				System.out.println("Waiting for client on port " + serverSocket.getLocalPort() + "...");
+				server = serverSocket.accept();
+				outToServer = server.getOutputStream();
+				System.out.println("Just connected to " + server.getRemoteSocketAddress());
+				
+			}
+		catch(SocketTimeoutException s)
+			{
+				System.out.println("Socket timed out!");
+				break;
+			}catch(IOException e)
+			{
+
+				e.printStackTrace();
+				break;
+			}
+		}
+	}
 	
 	
 	
@@ -348,6 +428,7 @@ public class managerRealTimeData implements EWrapper
 	{
 		// Return the next valid OrderID
 		nextOrderID = orderId;
+		System.out.println(nextOrderID);
 	}
 
 

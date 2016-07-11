@@ -17,14 +17,15 @@ public class barByInterval {
 	private long time;
 	
 	
-	public barByInterval(long time,double open, double high, double low,double close, long volum)
+	public barByInterval(long time,double open, double high, double low,double close, long volum, int type)
 	{
 		this.time = time;
 		this.open = open;
 		this.high = high;
 		this.low = low;
 		this.close = close;
-		this.volume = volum;		
+		this.volume = volum;
+		this.type = type;
 	}
 	
 	public String convertToJSON()
