@@ -27,6 +27,39 @@ public class barByInterval {
 		this.volume = volum;
 		this.type = type;
 	}
+	public barByInterval(String st)
+	{
+		try {
+			JSONObject obj = new JSONObject(st);
+
+			double open = obj.getDouble("open");
+			double high = obj.getDouble("high");
+			double low = obj.getDouble("low");
+			double close = obj.getDouble("close");
+			long volume = obj.getLong("volume");
+			int type = obj.getInt("type");//equal-0,long-1, short-2
+			long time = obj.getLong("time");
+
+			this.time = time;
+			this.open = open;
+			this.high = high;
+			this.low = low;
+			this.close = close;
+			this.volume = volume;
+			this.type = type;
+			
+			//barByInterval barVal =  new barByInterval(time, open,  high,  low, close,  volume,  type);
+			//return barVal;
+			//System.out.println("form client- high: "+barVal.getHigh());
+
+
+		} catch (JSONException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//return null;
+
+	}
 	
 	public String convertToJSON()
 	{

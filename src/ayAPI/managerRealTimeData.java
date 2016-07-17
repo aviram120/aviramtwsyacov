@@ -26,49 +26,51 @@ import com.ib.controller.ApiController.ITimeHandler;
 public class managerRealTimeData implements EWrapper
 {
 	private int nextOrderID = 0;// Keep track of the next ID
-	private EClientSocket client = null;// The IB API Client Socket object
-	
+	//private EClientSocket client = null;// The IB API Client Socket object
+
+	private EClientSocket client;// The IB API Client Socket object
+
+
 	private fiveSec[] arrFiveSec;//array to hold all 5-sec values.
 	private int countResponseFromTws;
 	private barByInterval barObj;
 	private final int NUMBER_OF_RECORDS_BY_INTERVAL;
 	private final int INTERVAL_GRAPH;
 	private boolean isSync;
-	
-	
+
+
 	private ServerSocket serverSocket;
 	Socket server;
 	OutputStream outToServer;
 	DataOutputStream out;
-	
 
-	public managerRealTimeData(String symbol, int intervalGraph, int port)
+
+	public managerRealTimeData(String symbol, int intervalGraph, int portSocket)
 	{
-		
-		//makeSocketConnection(port);
-		
+
+		makeSocketConnection(portSocket);
 		this.isSync = false;
 		this.INTERVAL_GRAPH = intervalGraph;
 		this.NUMBER_OF_RECORDS_BY_INTERVAL =  intervalGraph*60/5;
 		arrFiveSec = new fiveSec[this.NUMBER_OF_RECORDS_BY_INTERVAL];
 		countResponseFromTws = 0;
-		
+
 		getBarsByInterval(symbol);
 	} 
 
 	public void newOrder(EClientSocket c)
 	{
-		
+
 		Contract contract = new Contract();
 		Order order = new Order();
-	
-		 
+
+
 		contract.m_symbol = "SPY";     // For combo order use “USD” as the symbol value all the time
 		contract.m_secType = "STK";   // BAG is the security type for COMBO order
 		contract.m_exchange = "SMART";
 		contract.m_currency = "USD";
 
-		 
+
 		order.m_action = "BUY";
 		order.m_totalQuantity = 1;
 		order.m_orderType = "STP";
@@ -81,7 +83,7 @@ public class managerRealTimeData implements EWrapper
 		client = new EClientSocket (this);// Create a new EClientSocket object
 		client.eConnect (null, 7496, 0);// Connect to the TWS or IB Gateway application
 
-		
+
 		try // Pause here for connection to complete
 		{
 			// Thread.sleep(1000);//one sec
@@ -90,74 +92,74 @@ public class managerRealTimeData implements EWrapper
 		{
 			e.printStackTrace ();
 		}
-		
-		client.reqIds(100);
-		newOrder(client);
-		
-		/*
+
+		/*client.reqIds(100);
+		newOrder(client);*/
+
 		// Create a new contract
 		Contract contract = new Contract ();
 		contract.m_symbol = symbol;
 		contract.m_exchange = "SMART";
 		contract.m_secType = "STK";
 		contract.m_currency = "USD";
-			
+
 		Vector<TagValue> realTimeBarsOptions = new Vector<TagValue>();// Create a TagValue list
-		
+
 		client.reqRealTimeBars(0, contract,5,"TRADES",false,realTimeBarsOptions);// will be returned via the realtimeBar method
-	*/
+
 	} 
 
 	public void realtimeBar(int reqId, long time, double open, double high, double low, double close, long volume, double wap, int count)
 	{
 		if (!this.isSync)//sync to system time
 		{
+			System.out.println("is in");
 			long mili = time*1000L;
 			int secondsStart = (int) (mili / 1000) % 60 ;
 			int minutesStart = (int) ((mili / (1000*60)) % 60);
-			
+
 			if ((minutesStart % this.INTERVAL_GRAPH)==0)
 			{
 				if (secondsStart == 0)
 				{
 					this.isSync = true;
 					System.out.println("is sync!");
-					
+
 				}
 				else
 					return;
 			}
 			else
 				return;
-	
+
 		}
-		
+
 		fiveSec fiveSecObj;
 
 		try
 		{
 			System.out.println("realtimeBar:" + time + "," + open + "," + high + "," + low + "," + close + ",volume: " +volume + ", counter:"+countResponseFromTws);
-			
+
 			fiveSecObj = new fiveSec(time,open,high,low,close,volume,countResponseFromTws);
 			arrFiveSec[countResponseFromTws] = fiveSecObj;
 			countResponseFromTws++;
-			
+
 			if (countResponseFromTws == NUMBER_OF_RECORDS_BY_INTERVAL)
 			{
-				
+
 				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time);//make the bar values
-				
-				
+
+
 				System.err.println("barByInterval: barSize:"+this.INTERVAL_GRAPH+", high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
 				//System.err.println(barObj.convertToJSON());
-				
+
 				countResponseFromTws = 0;
-				
-				
+
+				//TODO-sent to socket-client
 				out = new DataOutputStream(outToServer);
 				out.writeUTF(barObj.convertToJSON());	
-				
-				//TODO-sent to socket-client
+
+
 			}
 		}
 		catch (Exception e)
@@ -168,14 +170,15 @@ public class managerRealTimeData implements EWrapper
 	public void currentTime(long time)
 	{	
 		long currentDateTime = time*1000L;
-		
+
 		System.out.println("corrent time: "+ currentDateTime);
-		
+
 	}
-	
+
 	private void makeSocketConnection(int port)
 	{
-		try {
+		try 
+		{
 			serverSocket = new ServerSocket(port);
 			serverSocket.setSoTimeout(10000);
 		} catch (SocketException e) {
@@ -185,37 +188,35 @@ public class managerRealTimeData implements EWrapper
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+
 		
-		while(true)
-		{
 			try
 			{
 				System.out.println("Waiting for client on port " + serverSocket.getLocalPort() + "...");
 				server = serverSocket.accept();
 				outToServer = server.getOutputStream();
 				System.out.println("Just connected to " + server.getRemoteSocketAddress());
-				
 			}
-		catch(SocketTimeoutException s)
+			catch(SocketTimeoutException s)
 			{
 				System.out.println("Socket timed out!");
-				break;
+				//break;
 			}catch(IOException e)
 			{
 
 				e.printStackTrace();
-				break;
+				//break;
 			}
-		}
+		
 	}
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
 	//****************
 	//unused function
 	//****************
@@ -243,7 +244,7 @@ public class managerRealTimeData implements EWrapper
 	{
 	}
 
-	
+
 
 	public void displayGroupList(int requestId, String contraftInfo)
 	{
@@ -402,7 +403,7 @@ public class managerRealTimeData implements EWrapper
 	{
 	}
 
-	
+
 
 
 	public void error(Exception e)
@@ -448,4 +449,8 @@ public class managerRealTimeData implements EWrapper
 
 
 
-} // end public class RealTimeBars
+} // end public class 
+
+
+
+
