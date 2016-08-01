@@ -6,7 +6,7 @@ import org.json.JSONObject;
 public class barByInterval {
 
 	
-	
+	private String symbol;
 	private double open;
 	private double high;
 	private double low;
@@ -17,8 +17,9 @@ public class barByInterval {
 	private long time;
 	
 	
-	public barByInterval(long time,double open, double high, double low,double close, long volum, int type)
+	public barByInterval(String symbol,long time,double open, double high, double low,double close, long volum, int type)
 	{
+		this.symbol = symbol;
 		this.time = time;
 		this.open = open;
 		this.high = high;
@@ -32,6 +33,7 @@ public class barByInterval {
 		try {
 			JSONObject obj = new JSONObject(st);
 
+			String symbol = obj.getString("symbol");
 			double open = obj.getDouble("open");
 			double high = obj.getDouble("high");
 			double low = obj.getDouble("low");
@@ -40,6 +42,8 @@ public class barByInterval {
 			int type = obj.getInt("type");//equal-0,long-1, short-2
 			long time = obj.getLong("time");
 
+			
+			this.symbol = symbol;
 			this.time = time;
 			this.open = open;
 			this.high = high;
@@ -61,11 +65,19 @@ public class barByInterval {
 
 	}
 	
+	public String getSymbol() {
+		return symbol;
+	}
+	public void setSymbol(String symbol) {
+		this.symbol = symbol;
+	}
 	public String convertToJSON()
 	{
 		JSONObject obj = new JSONObject();
 
 	      try {
+	    	  
+	    	obj.put("symbol", this.symbol);  
 			obj.put("time", this.time);
 			obj.put("open", this.open);	
 			obj.put("high", this.high);	
@@ -82,8 +94,10 @@ public class barByInterval {
 	      
 	}
 	
-	public barByInterval(fiveSec[] arrFiveSec,int interval,long time)
+	public barByInterval(fiveSec[] arrFiveSec,int interval,long time,String symbol)
+	//public barByInterval(fiveSec[] arrFiveSec,int interval,long time)
 	{		
+		
 		double open = arrFiveSec[0].getOpen();
 		double high = arrFiveSec[0].getHigh();
 		double low = arrFiveSec[0].getLow();
@@ -120,6 +134,7 @@ public class barByInterval {
 			type = 0;//equal
 		}
 		
+		this.symbol = symbol;
 		this.time = time;
 		
 		this.open = open;

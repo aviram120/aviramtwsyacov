@@ -43,6 +43,7 @@ public class client
 		try {
 			JSONObject obj = new JSONObject(st);
 
+			
 			double open = obj.getDouble("open");
 			double high = obj.getDouble("high");
 			double low = obj.getDouble("low");
@@ -50,9 +51,10 @@ public class client
 			long volume = obj.getLong("volume");
 			int type = obj.getInt("type");//equal-0,long-1, short-2
 			long time = obj.getLong("time");
+			
 
-			barByInterval barVal =  new barByInterval(time, open,  high,  low, close,  volume,  type);
-			System.out.println("form client- high: "+barVal.getHigh());
+			//barByInterval barVal =  new barByInterval(time, open,  high,  low, close,  volume,  type);
+			//System.out.println("form client- high: "+barVal.getHigh());
 
 
 		} catch (JSONException e) {

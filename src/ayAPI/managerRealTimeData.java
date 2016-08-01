@@ -37,6 +37,7 @@ public class managerRealTimeData implements EWrapper
 	private final int NUMBER_OF_RECORDS_BY_INTERVAL;
 	private final int INTERVAL_GRAPH;
 	private boolean isSync;
+	private String symbol;
 
 
 	private ServerSocket serverSocket;
@@ -49,6 +50,7 @@ public class managerRealTimeData implements EWrapper
 	{
 
 		makeSocketConnection(portSocket);
+		this.symbol = symbol;
 		this.isSync = false;
 		this.INTERVAL_GRAPH = intervalGraph;
 		this.NUMBER_OF_RECORDS_BY_INTERVAL =  intervalGraph*60/5;
@@ -113,7 +115,7 @@ public class managerRealTimeData implements EWrapper
 	{
 		if (!this.isSync)//sync to system time
 		{
-			System.out.println("is in");
+			System.out.println("please wait whill sync");
 			long mili = time*1000L;
 			int secondsStart = (int) (mili / 1000) % 60 ;
 			int minutesStart = (int) ((mili / (1000*60)) % 60);
@@ -147,10 +149,12 @@ public class managerRealTimeData implements EWrapper
 			if (countResponseFromTws == NUMBER_OF_RECORDS_BY_INTERVAL)
 			{
 
-				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time);//make the bar values
+				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time,this.symbol);//make the bar values
+
+				//barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time);//make the bar values
 
 
-				System.err.println("barByInterval: barSize:"+this.INTERVAL_GRAPH+", high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
+				System.err.println("barByInterval: barSize:"+this.INTERVAL_GRAPH+ " symbol:" + this.symbol+" , high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
 				//System.err.println(barObj.convertToJSON());
 
 				countResponseFromTws = 0;
@@ -429,7 +433,6 @@ public class managerRealTimeData implements EWrapper
 	{
 		// Return the next valid OrderID
 		nextOrderID = orderId;
-		System.out.println(nextOrderID);
 	}
 
 

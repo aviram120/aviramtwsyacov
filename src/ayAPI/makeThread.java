@@ -14,6 +14,8 @@ class makeThread implements Runnable {
 	
 
 	public makeThread(String threadName, int threadID,int interval, int portSocekt, String symbol){
+		//for t1-connect with tws
+		
 		this.threadName = threadName;
 		this.threadID = threadID;
 		
@@ -22,6 +24,8 @@ class makeThread implements Runnable {
 		this.symbol = symbol;
 	}
 	public makeThread(String threadName, int threadID,int interval, int portSocekt){
+		//for t2- get date from broker
+		
 		this.threadName = threadName;
 		this.threadID = threadID;
 		
@@ -31,18 +35,12 @@ class makeThread implements Runnable {
 
 
 	private void task_RealTimeDate()
-	{
-		
-		/*int portSocket = 6066;
-		int inteval = 1;//in mintues
-*/		managerRealTimeData instance = new managerRealTimeData("spy",inteval,portSocket);// Create an instance	
+	{//frunction for t1
+		managerRealTimeData instance = new managerRealTimeData("spy",inteval,portSocket);// Create an instance	
 	}
 
 	private void task_OrderManger()
-	{
-		/*int portSocket = 6066;
-		int inteval = 1;//in mintues		
-*/		
+	{//frunction for t2
 		managerClient client = new managerClient(inteval, portSocket);
 		client.getData();
 	}
