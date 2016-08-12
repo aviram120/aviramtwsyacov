@@ -275,7 +275,7 @@ public class ManagerClient {
 					
 					if ((counActiveOrders + countUnActiveOrders) < this.objLocal.getMaxTransactionsPerDay())
 					{
-						if (counActiveOrders == 0)//there is no future orders that active
+						if (counActiveOrders == 0)//there is no future orders that wait
 						{//run alogTread
 							algoTrade(false);
 							return;

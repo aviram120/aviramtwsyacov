@@ -1,5 +1,7 @@
 package ayAPI;
 
+import api2.OrderToExecute;
+
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
@@ -43,7 +45,7 @@ public class IbConnector implements EWrapper{
 		
 	}
 
-	public int placeNewOrder(String symbol, order orderObj , int ocaGroupNum)
+	public int placeNewOrder(OrderToExecute objOrder)
 	{//the function make the reqest to IB format
 		
 		//action = BUY, SELL
@@ -52,23 +54,28 @@ public class IbConnector implements EWrapper{
 		Contract contract = new Contract();
 		Order order = new Order();
 
-		contract.m_symbol = symbol;     // For combo order use “USD” as the symbol value all the time
+		contract.m_symbol = objOrder.getSymbol();     // For combo order use “USD” as the symbol value all the time
 		contract.m_secType = "STK";   // BAG is the security type for COMBO order
 		contract.m_exchange = "SMART";
 		contract.m_currency = "USD";
 
 		//set action
-		if (orderObj.getAction() == orderObj.BUY)
+		if (objOrder.getAction() == objOrder.BUY)
 		{order.m_action = "buy";}
-		if (orderObj.getAction() == orderObj.SELL)
+		if (objOrder.getAction() == objOrder.SELL)
 		{order.m_action = "SELL";}
 
-		order.m_totalQuantity = orderObj.getQuantity();
-		order.m_ocaGroup = String.valueOf(ocaGroupNum);
+		order.m_totalQuantity = objOrder.getQuantity();
+		
+		if (objOrder.getOca()!= -1)
+		{
+			order.m_ocaGroup = String.valueOf(objOrder.getOca());
+		}
+		
 
 
 		//set order type
-		switch(orderObj.getTypeOrdr()){
+		switch(objOrder.getTypeOrder()){
 		case MKT:
 			order.m_orderType = "MKT";
 			break;
@@ -79,22 +86,25 @@ public class IbConnector implements EWrapper{
 
 		case STP_LIMIT:
 			order.m_orderType = "STP LMT";
-			order.m_lmtPrice = orderObj.getLimitOrder();//only for stop limit order
+			order.m_lmtPrice = objOrder.getLimitPrice();//only for stop limit order
 			break;
 
 		case LIMIT:
 			order.m_orderType = "LMT";
+			order.m_lmtPrice = objOrder.getPrice();//only for take profit
 			break;
 		}
-		order.m_auxPrice = orderObj.getEnterPrice();//Generic field to contain the stop price for STP LMT orders, trailing amount, etc
+		order.m_auxPrice = objOrder.getPrice();//for STP orders only
 
 		this.client.placeOrder(nextOrderID,contract,order);
 		//this.client.eDisconnect();
 		
-		//nextOrderID++;
+		int IdOrder = nextOrderID;
+		nextOrderID++;
 		
-		return nextOrderID;
+		return IdOrder;
 	}
+	
 	public void cancelOrder(int idServer)
 	{
 		client.cancelOrder(idServer);

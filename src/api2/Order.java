@@ -1,27 +1,30 @@
 package api2;
 
+import java.util.Random;
+
 public class Order {
 	public final int ACTIVE = 1;
 	public final int WAIT = 2;
 	public final int CLOSED = 3;
 	public final int CANCEl = 4;
-	
+
 	public final int BUY = 1;
 	public final int SELL = 2;
-	
+
 	public final int MKT = 1;
 	public final int STP = 2;
 	public final int STP_LIMIT = 3;
 	public final int LIMIT = 4;
-	
-	
+
+
 	private int id;
 	private int oca;
 	private int quantity;
 	private int action;//buy - 1; sell - 2;
 	private long time;
 	private boolean isActive;//if the order is active or unactive
-	
+
+	private FutureOrder enter;
 	private FutureOrder stop;
 	private FutureOrder takeProfit;
 
@@ -32,24 +35,30 @@ public class Order {
 			double takeProfitPrice
 			)
 	{
+
 		//general properties
 		this.id = id;
-		this.oca = 3;//TODO- make a random number
+
+		//make random num for ocaGroup
+		Random rand = new Random();
+		int  ocaGroupNum = rand.nextInt(99999) + 999;
+		this.oca = ocaGroupNum;
+		
 		this.quantity = quantity;
 		this.action = action;
 		this.time = time;
 		this.isActive = true; 
-		
+
 		this.enter = new FutureOrder(typeOrdrEnter, enterPrice, limitPrice);	
 		this.stop = new FutureOrder(stopPrice);
 		this.takeProfit = new FutureOrder(takeProfitPrice, 0);
 	}
+
+
+
+
+
 	
-	
-	
-	
-	
-	private FutureOrder enter;
 	public int getId() {
 		return id;
 	}
@@ -195,11 +204,11 @@ public class Order {
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
 }

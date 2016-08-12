@@ -43,7 +43,7 @@ public class FutureOrder {
 	{//only for add stop price
 		this.status = WAIT;
 		
-		//TODO this.typeOrdr = STP;
+		this.typeOrdr = STP;
 		this.stopPrice = stopPrice;
 	}
 	public FutureOrder(double takeProfitPrice,int notUse)
@@ -51,7 +51,7 @@ public class FutureOrder {
 		
 		this.status = WAIT;
 		
-		//TODO this.typeOrdr = LIMIT;
+		this.typeOrdr = LIMIT;
 		this.takeProfitPrice = takeProfitPrice;
 	}
 
