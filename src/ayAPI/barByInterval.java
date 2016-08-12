@@ -17,6 +17,18 @@ public class barByInterval {
 	private long time;
 	
 	
+	public barByInterval(barByInterval tempBar)
+	{
+		this.symbol = tempBar.getSymbol();
+		this.time = tempBar.getTime();
+		this.open = tempBar.getOpen();
+		this.high = tempBar.getHigh();
+		this.low = tempBar.getLow();
+		this.close = tempBar.getClose();
+		this.volume = tempBar.getVolume();
+		this.type = tempBar.getType();
+		
+	}
 	public barByInterval(String symbol,long time,double open, double high, double low,double close, long volum, int type)
 	{
 		this.symbol = symbol;
@@ -28,6 +40,35 @@ public class barByInterval {
 		this.volume = volum;
 		this.type = type;
 	}
+	
+	public barByInterval(String symbol,long time,double open, double high, double low,double close, long volum)
+	{
+		this.symbol = symbol;
+		this.time = time;
+		this.open = open;
+		this.high = high;
+		this.low = low;
+		this.close = close;
+		this.volume = volum*100;
+		
+		int type;
+		if (open>close)
+		{
+			type = 1;//long
+		}
+		else if (open<close)
+		{
+			type = 2;//short
+		}
+		else
+		{
+			type = 0;//equal
+		}
+		
+		this.type = type;
+	}
+	
+	
 	public barByInterval(String st)
 	{
 		try {
@@ -52,10 +93,6 @@ public class barByInterval {
 			this.volume = volume;
 			this.type = type;
 			
-			//barByInterval barVal =  new barByInterval(time, open,  high,  low, close,  volume,  type);
-			//return barVal;
-			//System.out.println("form client- high: "+barVal.getHigh());
-
 
 		} catch (JSONException e) {
 			// TODO Auto-generated catch block
@@ -65,6 +102,12 @@ public class barByInterval {
 
 	}
 	
+	public int getType() {
+		return type;
+	}
+	public void setType(int type) {
+		this.type = type;
+	}
 	public String getSymbol() {
 		return symbol;
 	}

@@ -13,6 +13,7 @@ public class symbolIndex {
 	
 	private String symbol;
 	private List<order> listOrders;
+	
 	private int numOfActiveOrders;//ACTIVE
 	private int numOfWaitOrders;//WAIT
 	private int numOfClosedOrder;//CLOSED - Reached to 'stop' or 'take-profit' 

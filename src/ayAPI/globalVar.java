@@ -2,24 +2,36 @@ package ayAPI;
 
 
 public class globalVar {
-	public final int MARKET = 1;
+	public final int STP = 1;
 	public final int STOP_LIMIT = 2;
 	
 	private int orderType;//market - 1; stop limit - ;
 	private double centToGiveup;
-	private double barTriger;
 	private int defineNextStop;
 	private int stopType;
 	private boolean b1;//*****************
-	private boolean maxRisk;
+	private int maxRisk;
 	private String timeStopAddOrder;//clear all Future provisions(in format- HH:mm)
-	private String timeCloseAllOrder;
+	private String timeCloseAllOrder;//(in format- HH:mm)
 	private boolean stopRobot;
 
 
 
 
-	public int getOrderType() {
+	public globalVar(int orderType, double centToGiveup, int defineNextStop,
+			int stopType, int maxRisk, String timeStopAddOrder,
+			String timeCloseAllOrder) {
+		
+		this.orderType = orderType;
+		this.centToGiveup = centToGiveup;
+		this.defineNextStop = defineNextStop;
+		this.stopType = stopType;
+		this.maxRisk = maxRisk;
+		this.timeStopAddOrder = timeStopAddOrder;
+		this.timeCloseAllOrder = timeCloseAllOrder;
+		//this.stopRobot = stopRobot;
+	}
+	public int getOrderType() {//can by STP or STP_LIMIT
 		return orderType;
 	}
 	public void setOrderType(int orderType) {
@@ -32,12 +44,7 @@ public class globalVar {
 	public void setCentToGiveup(double centToGiveup) {
 		this.centToGiveup = centToGiveup;
 	}
-	public double getBarTriger() {
-		return barTriger;
-	}
-	public void setBarTriger(double barTriger) {
-		this.barTriger = barTriger;
-	}
+	
 	public int getDefineNextStop() {
 		return defineNextStop;
 	}
@@ -56,10 +63,10 @@ public class globalVar {
 	public void setB1(boolean b1) {
 		this.b1 = b1;
 	}
-	public boolean getMaxRisk() {
+	public int getMaxRisk() {
 		return maxRisk;
 	}
-	public void setMaxRisk(boolean maxRisk) {
+	public void setMaxRisk(int maxRisk) {
 		this.maxRisk = maxRisk;
 	}
 	public String getTimeStopAddOrder() {

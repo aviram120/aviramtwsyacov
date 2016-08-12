@@ -10,7 +10,8 @@ public class localVar {
 	private String symbol;
 	private int strategy;//inside bar - 1; movingAvr - 2; 
 	private int direction;//long - 1; short -2;
-	private int timefream;
+	private int movingAvrBar;//whic moving avr needs(1/5/10 mins) if no need -1
+	private int interval;
 	private int minVolume;
 	private double minBarSize;
 	private double maxBarSize;
@@ -22,12 +23,54 @@ public class localVar {
 	private double maxRiskPerTransactionsDolars;
 	private double extarPrice;
 	private double pe;
+	//
+	//
+	private double barTriger;
 	
 	
 	
 	
 	
+	public localVar(String symbol, int strategy, int direction,int movingAvrBar, int interval,
+			int minVolume, double minBarSize, double maxBarSize,
+			double addCentToBreak, int numBarToCancelDeal,
+			boolean isAggressive, int maxTransactionsPerDay,
+			double riskPerTransactionsDolars,
+			double maxRiskPerTransactionsDolars, double extarPrice, double pe,
+			double barTriger) {
+		
+		this.symbol = symbol;
+		this.strategy = strategy;
+		this.direction = direction;
+		this.movingAvrBar = movingAvrBar;
+		this.interval = interval;
+		this.minVolume = minVolume;
+		this.minBarSize = minBarSize;
+		this.maxBarSize = maxBarSize;
+		this.addCentToBreak = addCentToBreak;
+		this.numBarToCancelDeal = numBarToCancelDeal;
+		this.isAggressive = isAggressive;
+		this.maxTransactionsPerDay = maxTransactionsPerDay;
+		this.riskPerTransactionsDolars = riskPerTransactionsDolars;
+		this.maxRiskPerTransactionsDolars = maxRiskPerTransactionsDolars;
+		this.extarPrice = extarPrice;
+		this.pe = pe;
+		this.barTriger = barTriger;
+	}
 	
+	
+	public int getMovingAvrBar() {
+		return movingAvrBar;
+	}
+	public void setMovingAvrBar(int movingAvrBar) {
+		this.movingAvrBar = movingAvrBar;
+	}
+	public double getBarTriger() {
+		return barTriger;
+	}
+	public void setBarTriger(double barTriger) {
+		this.barTriger = barTriger;
+	}
 	public int getDirection() {
 		return direction;
 	}
@@ -52,11 +95,11 @@ public class localVar {
 	public void setStrategy(int strategy) {
 		this.strategy = strategy;
 	}
-	public int getTimefream() {
-		return timefream;
+	public int getInterval() {
+		return interval;
 	}
-	public void setTimefream(int timefream) {
-		this.timefream = timefream;
+	public void setInterval(int interval) {
+		this.interval = interval;
 	}
 	public int getMinVolume() {
 		return minVolume;

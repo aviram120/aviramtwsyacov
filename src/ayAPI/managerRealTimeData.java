@@ -7,6 +7,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Vector;
 import com.ib.client.Contract;
 import com.ib.client.ContractDetails;
@@ -25,6 +28,7 @@ import com.ib.controller.ApiController.ITimeHandler;
 
 public class managerRealTimeData implements EWrapper
 {
+	
 	private int nextOrderID = 0;// Keep track of the next ID
 	//private EClientSocket client = null;// The IB API Client Socket object
 
@@ -60,26 +64,6 @@ public class managerRealTimeData implements EWrapper
 		getBarsByInterval(symbol);
 	} 
 
-	public void newOrder(EClientSocket c)
-	{
-
-		Contract contract = new Contract();
-		Order order = new Order();
-
-
-		contract.m_symbol = "SPY";     // For combo order use “USD” as the symbol value all the time
-		contract.m_secType = "STK";   // BAG is the security type for COMBO order
-		contract.m_exchange = "SMART";
-		contract.m_currency = "USD";
-
-
-		order.m_action = "BUY";
-		order.m_totalQuantity = 1;
-		order.m_orderType = "STP";
-		order.m_auxPrice = 220;
-
-		c.placeOrder(nextOrderID,contract,order);
-	}
 	public void getBarsByInterval(String symbol)
 	{
 		client = new EClientSocket (this);// Create a new EClientSocket object
@@ -95,9 +79,6 @@ public class managerRealTimeData implements EWrapper
 			e.printStackTrace ();
 		}
 
-		/*client.reqIds(100);
-		newOrder(client);*/
-
 		// Create a new contract
 		Contract contract = new Contract ();
 		contract.m_symbol = symbol;
@@ -109,6 +90,19 @@ public class managerRealTimeData implements EWrapper
 
 		client.reqRealTimeBars(0, contract,5,"TRADES",false,realTimeBarsOptions);// will be returned via the realtimeBar method
 
+		/*
+		// Create a new contract
+		Contract contract2 = new Contract ();
+		contract2.m_symbol = "FB";
+		contract2.m_exchange = "SMART";
+		contract2.m_secType = "STK";
+		contract2.m_currency = "USD";
+
+		Vector<TagValue> realTimeBarsOptions2 = new Vector<TagValue>();// Create a TagValue list
+
+		client.reqRealTimeBars(1, contract2,5,"TRADES",false,realTimeBarsOptions2);// will be returned via the realtimeBar method
+
+		*/
 	} 
 
 	public void realtimeBar(int reqId, long time, double open, double high, double low, double close, long volume, double wap, int count)
@@ -126,7 +120,7 @@ public class managerRealTimeData implements EWrapper
 				{
 					this.isSync = true;
 					System.out.println("is sync!");
-
+					getHistoryByStrategy(mili);
 				}
 				else
 					return;
@@ -135,12 +129,13 @@ public class managerRealTimeData implements EWrapper
 				return;
 
 		}
+		//get history
 
 		fiveSec fiveSecObj;
 
 		try
 		{
-			System.out.println("realtimeBar:" + time + "," + open + "," + high + "," + low + "," + close + ",volume: " +volume + ", counter:"+countResponseFromTws);
+			System.out.println("realtimeBar: reqId: "+reqId +", time:"+ time + "," + open + "," + high + "," + low + "," + close + ",volume: " +volume + ", counter:"+countResponseFromTws);
 
 			fiveSecObj = new fiveSec(time,open,high,low,close,volume,countResponseFromTws);
 			arrFiveSec[countResponseFromTws] = fiveSecObj;
@@ -151,17 +146,16 @@ public class managerRealTimeData implements EWrapper
 
 				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time,this.symbol);//make the bar values
 
-				//barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time);//make the bar values
-
-
 				System.err.println("barByInterval: barSize:"+this.INTERVAL_GRAPH+ " symbol:" + this.symbol+" , high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
 				//System.err.println(barObj.convertToJSON());
 
 				countResponseFromTws = 0;
 
+				writeToSocket(barObj.convertToJSON());
+				
 				//TODO-sent to socket-client
-				out = new DataOutputStream(outToServer);
-				out.writeUTF(barObj.convertToJSON());	
+				/*out = new DataOutputStream(outToServer);
+				out.writeUTF(barObj.convertToJSON());	*/
 
 
 			}
@@ -171,6 +165,84 @@ public class managerRealTimeData implements EWrapper
 			e.printStackTrace ();
 		}
 	}
+	private void writeToSocket(String st)
+	{//the function write to socket 
+		
+		out = new DataOutputStream(outToServer);
+		try {
+			out.writeUTF(st);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	private void getHistoryByStrategy(long timeInMilisec)
+	{//the funtion return the history of the graph
+		
+		//TODO- fix to there var - by input
+		int movingAvr = -1;
+		int strategy = 1;//1 insideBar; 2 moving Avrag
+		
+		final int SEC_IN_MIN = 60; 
+		
+		// Pass date object
+		Date date = new Date(timeInMilisec);
+    	SimpleDateFormat formatter= new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+    	
+    	String endTime = formatter.format(date);
+    	//System.out.println(endTime);
+    	
+    	String DurationInSec = "";
+    	if (strategy == 1)//insideBar strategy
+    	{
+    		int countOfBar = 3;
+    		DurationInSec = Integer.toString(this.INTERVAL_GRAPH*countOfBar*SEC_IN_MIN);
+    	}
+    	else
+    	{//movingAvrage strategy
+    		if (movingAvr!=-1)
+    		{
+        		DurationInSec = Integer.toString(((this.INTERVAL_GRAPH*movingAvr)+this.INTERVAL_GRAPH)*SEC_IN_MIN);//bar in graph * which movingAvrag *60 sec
+    		}
+
+    	}
+    	
+    	String barSize ="";
+    	if (this.INTERVAL_GRAPH == 1)
+    	{
+    		barSize = this.INTERVAL_GRAPH+" min";
+    	}
+    	else//the difference is in "s"
+    	{
+    		barSize = this.INTERVAL_GRAPH+" mins";
+    	}
+    	
+    	/*System.out.println("DurationInSec:"+DurationInSec);
+    	System.out.println("strategy:"+strategy+" ,timeFream:"+this.INTERVAL_GRAPH+" , movingAv:"+movingAvr);
+    	*/
+    	
+		// Create a new contract
+		Contract contract = new Contract ();
+		contract.m_symbol = this.symbol;
+		contract.m_exchange = "SMART";
+		contract.m_secType = "STK";
+		contract.m_currency = "USD";
+		// Create a TagValue list for chartOptions
+		Vector<TagValue> chartOptions = new Vector<TagValue>();
+		// Make a call to start off data historical retrieval
+		client.reqHistoricalData(0, contract, 
+										 endTime,  // End Date/Time yyyymmdd hh:MM:SS
+						                 DurationInSec+" S",                // Duration (S,D)
+						                 barSize ,              // Bar size
+						                 "TRADES",             // What to show
+						                 1,                    // useRTH
+						                 1, 
+                                         chartOptions);
+		
+		
+		
+	}
+	
 	public void currentTime(long time)
 	{	
 		long currentDateTime = time*1000L;
@@ -186,10 +258,10 @@ public class managerRealTimeData implements EWrapper
 			serverSocket = new ServerSocket(port);
 			serverSocket.setSoTimeout(10000);
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
+			
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 
@@ -214,7 +286,57 @@ public class managerRealTimeData implements EWrapper
 		
 	}
 
+	public void historicalData(int reqId, String date, double open,
+			double high, double low, double close, int volume, int count,
+			double WAP, boolean hasGaps)
+	{
 
+		
+		// Display Historical data
+		try 
+		{
+			if (open!= -1)
+			{
+				String symbolTemp = this.symbol;
+				long timeTemp = convertDataToMilisec(date.toString());
+				double openTemp = open;
+				double highTemp = high;
+				double lowTemp = low;
+				double closeTemp = close;
+				long volumeTemp = volume;
+				
+				barByInterval tempBar = new barByInterval(symbolTemp, timeTemp, openTemp, highTemp, lowTemp, closeTemp, volumeTemp);
+				
+				String outputSt = tempBar.convertToJSON();
+				System.err.println(outputSt);
+				writeToSocket(outputSt);
+			}
+				
+			/*System.out.println("historicalData: data: " + date + ", open:" + 
+					open + ", high:" + high  + ", low:" + low  + ", close:" + close + ", volum:" +
+					volume);*/
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace ();
+		}
+
+		
+	}
+
+	private long convertDataToMilisec(String dataString)
+	{
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+        Date date = null;
+		try {
+			date = sdf.parse(dataString);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return date.getTime()/1000;
+	}
 
 
 
@@ -271,12 +393,6 @@ public class managerRealTimeData implements EWrapper
 	}
 
 	public void execDetailsEnd(int reqId)
-	{
-	}
-
-	public void historicalData(int reqId, String date, double open,
-			double high, double low, double close, int volume, int count,
-			double WAP, boolean hasGaps)
 	{
 	}
 

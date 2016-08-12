@@ -36,7 +36,7 @@ class makeThread implements Runnable {
 
 	private void task_RealTimeDate()
 	{//frunction for t1
-		managerRealTimeData instance = new managerRealTimeData("spy",inteval,portSocket);// Create an instance	
+		managerRealTimeData instance = new managerRealTimeData(this.symbol,inteval,portSocket);// Create an instance	
 	}
 
 	private void task_OrderManger()

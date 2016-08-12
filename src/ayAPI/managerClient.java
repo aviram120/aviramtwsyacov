@@ -12,6 +12,12 @@ import java.util.List;
 
 
 public class managerClient {
+	public final int MARKET = 1;
+	public final int STOP_LIMIT = 2;
+	public final int INSIDE_BAR = 1;
+	public final int MOVING_AVR = 2;
+	public final int LONG = 1;
+	public final int SHORT = 2;
 
 	private int portSocket;
 	private int interval;
@@ -24,6 +30,9 @@ public class managerClient {
 	private String serverName ="localhost";
 	private Indicators indicatorsClass;
 
+	private globalVar tempGlobal;
+	private localVar tempLocal;
+
 	public managerClient(int interval,int portSocket)
 	{
 		this.interval = interval;
@@ -35,6 +44,38 @@ public class managerClient {
 		counter = 0;
 
 		indicatorsClass = new Indicators();//class for indicators
+
+		//init - globalVar
+		int orderType = this.STOP_LIMIT;
+		double centToGiveup = 0.5;
+		int defineNextStop = 6;
+		int stopType = 1;
+		int maxRisk = 10;
+		String timeStopAddOrder = "18:40";
+		String timeCloseAllOrder = "22:50";
+		tempGlobal = new globalVar(orderType,centToGiveup,defineNextStop,stopType,maxRisk,timeStopAddOrder, timeCloseAllOrder);
+
+		//init - localVar
+		String symbol = "IONS";
+		int strategy = this.INSIDE_BAR;
+		int direction = this.SHORT;
+		int intervalGr = 5;
+		int minVolume = 50000;
+		double minBarSize = 0.2;
+		double maxBarSize = 0.7;
+		double addCentToBreak = 0.03;
+		int numBarToCancelDeal = 6;
+		boolean isAggressive = false;
+		int maxTransactionsPerDay = 2;
+		double riskPerTransactionsDolars = 150;
+		double maxRiskPerTransactionsDolars = 250;
+		double extarPrice = 0.07;
+		double pe = 3;
+		double barTriger = 3;
+		tempLocal = new localVar(symbol, strategy, direction,-1, intervalGr, minVolume, minBarSize,maxBarSize, addCentToBreak, numBarToCancelDeal, 
+				isAggressive, maxTransactionsPerDay,riskPerTransactionsDolars, maxRiskPerTransactionsDolars, extarPrice, pe, barTriger );
+
+		
 	}
 
 	public void getData()
@@ -48,13 +89,15 @@ public class managerClient {
 
 			DataInputStream in;
 			while (true)
-			{				
-				in = new DataInputStream(client.getInputStream());
+			{	
 
+				in = new DataInputStream(client.getInputStream());
+				//System.err.println(in.readUTF());
 				arrData[counter] = new barByInterval(in.readUTF());
-				
+
 				System.err.println("barByInterval from client: symbol:"+ arrData[counter].getSymbol() +" , high:"+ arrData[counter].getHigh() +" , low: "+arrData[counter].getLow()+" ,open: "+arrData[counter].getOpen()+" , close: "+arrData[counter].getClose()+" , vol: "+arrData[counter].getVolume());
 
+				algoTrade(tempGlobal,tempLocal,false,1);
 				//indicatorsClass.calculateVWAP(arrData, counter);
 
 				counter++;
@@ -81,6 +124,7 @@ public class managerClient {
 				(deltaHighToLow >= localVarObj.getMinBarSize()) &&
 				(deltaHighToLow <= localVarObj.getMaxBarSize()))
 		{
+			System.out.println("in algoTrade");
 			if (haveFuterOrder)
 			{
 				//TODO-find the futer orders in the list			
@@ -90,22 +134,27 @@ public class managerClient {
 			//==============movingAver strategy==============
 			if (localVarObj.getStrategy() == localVarObj.MOVING_AVR)
 			{
-				double movingAver5 = indicatorsClass.calculateMovingAverage(arrData, 5 , counter);
-				double movingAver10 = indicatorsClass.calculateMovingAverage(arrData, 10 , counter);
+				double movingAver = indicatorsClass.calculateMovingAverage(arrData, localVarObj.getInterval() , counter);
+				//double movingAver10 = indicatorsClass.calculateMovingAverage(arrData, 10 , counter);
 
-				if ((arrData[counter].getHigh()>movingAver5) && (arrData[counter].getHigh()>movingAver10))
+				if (movingAver != -1)
 				{
-					
-					System.err.println("from algoTrade:"+ "strategy: "+"movingAver"+ 
-							" ,time: "+arrData[counter].getTime() +
-							" ,open: "+arrData[counter].getOpen()+
-							" ,high: "+arrData[counter].getHigh()+
-							" ,low: "+arrData[counter].getLow()+
-							" ,close: "+arrData[counter].getClose()+
-							" ,volume: "+arrData[counter].getVolume());
-					
-					
+					if ((arrData[counter].getHigh()>movingAver) && (arrData[counter].getLow()<movingAver))
+					{
 
+						System.err.println("from algoTrade:"+ "strategy: "+"movingAver"+ 
+								" ,time: "+arrData[counter].getTime() +
+								" ,open: "+arrData[counter].getOpen()+
+								" ,high: "+arrData[counter].getHigh()+
+								" ,low: "+arrData[counter].getLow()+
+								" ,close: "+arrData[counter].getClose()+
+								" ,volume: "+arrData[counter].getVolume());
+
+						setNewOrder(globalVarObj,localVarObj,arrData[counter].getHigh(), arrData[counter].getLow());
+
+
+
+					}
 				}
 			}
 
@@ -113,21 +162,25 @@ public class managerClient {
 			//==============inside-bar strategy==============
 			if (localVarObj.getStrategy() == localVarObj.INSIDE_BAR)
 			{
-				if ((arrData[counter].getHigh() <= arrData[counter-1].getHigh()) && (arrData[counter].getLow() >= arrData[counter-1].getLow()))
+				if (counter>0)
 				{
-					System.err.println("from algoTrade:"+ "strategy: "+"inside bar"+ 
-							" ,time: "+arrData[counter].getTime() +
-							" ,open: "+arrData[counter].getOpen()+
-							" ,high: "+arrData[counter].getHigh()+
-							" ,low: "+arrData[counter].getLow()+
-							" ,close: "+arrData[counter].getClose()+
-							" ,volume: "+arrData[counter].getVolume());
 
+					if ((arrData[counter].getHigh() <= arrData[counter-1].getHigh()) && (arrData[counter].getLow() >= arrData[counter-1].getLow()))
+					{
+						System.err.println("from algoTrade:"+ "strategy: "+"inside bar"+ 
+								" ,time: "+arrData[counter-1].getTime() +
+								" ,open: "+arrData[counter-1].getOpen()+
+								" ,high: "+arrData[counter-1].getHigh()+
+								" ,low: "+arrData[counter-1].getLow()+
+								" ,close: "+arrData[counter-1].getClose()+
+								" ,volume: "+arrData[counter-1].getVolume());
+
+						setNewOrder(globalVarObj,localVarObj,arrData[counter-1].getHigh(),arrData[counter-1].getLow());
+
+					}
 				}
 			}
 		}
-
-
 
 	}
 	private order setNewOrder(globalVar globalVarObj, localVar localVarObj, double high, double low)
@@ -137,87 +190,76 @@ public class managerClient {
 		double enterPrice = 0;
 		double stopPrice;
 		double takeProfitPrice;
-		int quantity;
-		double limitOrder;
-		
-		//globalVarObj.getOrderType();centToGiveup,
-		
-		//localVarObj: direction, addCentToBreak
-		
+		double quantityDouble;
+		int quantityInt;
+		double limitOrder = 0;
+
+		//for long
 		if (localVarObj.getDirection() == localVarObj.LONG)
-		{
-			
-			if (globalVarObj.getOrderType() == globalVarObj.MARKET)
+		{	
+			enterPrice = high + localVarObj.getAddCentToBreak();//enter - price
+			stopPrice = high - (localVarObj.getBarTriger() * deltaHighToLow);//stop - price
+			takeProfitPrice = high + (deltaHighToLow * localVarObj.getPe());//take - profit
+
+			//quantity
+			quantityDouble = localVarObj.getRiskPerTransactionsDolars() / (deltaHighToLow);
+			quantityInt = (int) quantityDouble;
+			if (quantityInt < 100)
 			{
-				//enter - price
-				enterPrice = high + localVarObj.getAddCentToBreak();
-				
-				//stop - price
-				//stopPrice = enterPrice - (globalVarObj.getBarTriger() * (deltaHighToLow + localVarObj.getAddCentToBreak()));
-				stopPrice = high - (globalVarObj.getBarTriger() * deltaHighToLow);
-				
-				//take - profit
-				//takeProfitPrice = enterPrice + (deltaHighToLow * localVarObj.getPe());
-				takeProfitPrice = high + (deltaHighToLow * localVarObj.getPe());
-				
-				//quantity
-				quantity = (int)(localVarObj.getRiskPerTransactionsDolars() / (deltaHighToLow));
-				
-				if (quantity < 100)
-				{
-					quantity = (int) (localVarObj.getMaxRiskPerTransactionsDolars() / (deltaHighToLow));
-				}
+				quantityDouble = localVarObj.getMaxRiskPerTransactionsDolars() / (deltaHighToLow);
+				quantityInt = (int) quantityDouble;
 			}
-			
+
 			if (globalVarObj.getOrderType() == globalVarObj.STOP_LIMIT)
 			{
-				//enter - price
-				enterPrice = high + localVarObj.getAddCentToBreak();
-				
-				//limit order
-				limitOrder = high + (deltaHighToLow * globalVarObj.getCentToGiveup());
-				
-				//stop - price
-				//stopPrice = enterPrice - (enterPrice * globalVarObj.getBarTriger());
-				stopPrice = high - (deltaHighToLow * globalVarObj.getBarTriger());
-
-				
-				//take - profit
-				//takeProfitPrice = enterPrice + (deltaHighToLow * localVarObj.getPe());
-				takeProfitPrice = high + (deltaHighToLow * localVarObj.getPe());
-				
-				//quantity
-				quantity = (int)(localVarObj.getRiskPerTransactionsDolars() / (deltaHighToLow));
-				
-				if (quantity < 100)
-				{
-					quantity = (int) (localVarObj.getMaxRiskPerTransactionsDolars() / (deltaHighToLow));
-				}
+				limitOrder = enterPrice + (deltaHighToLow * globalVarObj.getCentToGiveup());//limit order
 			}
-			
-			
-			
-			
-			
+
+			System.err.println("in setNewOrder: " + "enterPrice: " + enterPrice
+					+ " stopPrice: " + stopPrice
+					+ " takeProfitPrice: " + takeProfitPrice
+					+ " quantity: " + quantityInt
+					+ " limitOrder: " + limitOrder
+					);
 		}
-		
+
+		//for short
 		if (localVarObj.getDirection() == localVarObj.SHORT)
 		{
-			
+
+			enterPrice = low - localVarObj.getAddCentToBreak();//enter - price
+			stopPrice = low + (localVarObj.getBarTriger() * deltaHighToLow);//stop - price
+			takeProfitPrice = low - (deltaHighToLow * localVarObj.getPe());//take - profit
+
+			//quantity
+			quantityDouble = localVarObj.getRiskPerTransactionsDolars() / (deltaHighToLow);
+			quantityInt = (int) quantityDouble;
+			if (quantityInt < 100)
+			{
+				quantityDouble = localVarObj.getMaxRiskPerTransactionsDolars() / (deltaHighToLow);
+				quantityInt = (int) quantityDouble;
+			}
+
+			if (globalVarObj.getOrderType() == globalVarObj.STOP_LIMIT)
+			{
+				limitOrder = enterPrice - (deltaHighToLow * globalVarObj.getCentToGiveup());//limit order
+			}
+
+			System.err.println("in setNewOrder: " + "enterPrice: " + enterPrice
+					+ " stopPrice: " + stopPrice
+					+ " takeProfitPrice: " + takeProfitPrice
+					+ " quantity: " + quantityInt
+					+ " limitOrder: " + limitOrder
+					);
+
 		}
-		
-		
-		//stop
-		
-		//take-profit
-		
-		//quntuty
-		
-		
+
+
+
 		return tempOrder;
-		
+
 	}
-	
+
 	private void canSearchForNewOrder(globalVar globalVarObj, localVar localVarObj)
 	{
 
@@ -249,7 +291,7 @@ public class managerClient {
 
 
 
-					
+
 
 				}
 			}

@@ -16,33 +16,54 @@ public class order {
 	public final int CLOSED = 3;
 	public final int CANCEl = 4;
 	
+	public final int BUY = 1;
+	public final int SELL = 2;
+	
+	public final int MKT = 1;
+	public final int STP = 2;
+	public final int STP_LIMIT = 3;
+	public final int LIMIT = 4;
+	
+	
 	private int id;
 	private int idServer;
-	private double orderPrice;
+	private int typeOrdr;
+	private double enterPrice;
+	private double limitOrder;
 	private double stop;
 	private double takeProfit;
-	private double quantity;
-	private int action;//long - 1; short - 2;
+	private long volume;
+	private int quantity;
+	private int action;//buy - 1; sell - 2;
 	private int counterBar;
 	private long time;
 	private int status;//active - 1; wait - 2; closed -3; cancel - 4;
+
 	
 	
 	
-	public order(int id ,int idServer, double orderPrice, double stop, double takeProfit, double quantity, int action, long time, int status) 
+	public order(int id ,int typeOrder, double enterPrice, double limitOrder, double stop, double takeProfit, long volume, int quantity, int action, int counterBar,long time,int status ) 
 	{//make new orde to place in BROKER
+		//action = BUY, SELL
+		//orderType = LMT, STP, STP LMT, MKT
 		
 		this.id = id;
-		this.idServer = idServer;
-		this.orderPrice = orderPrice;	
+		this.idServer = -1;
+		this.typeOrdr = typeOrder;
+		this.enterPrice = enterPrice;
+		this.limitOrder = limitOrder;
 		this.stop = stop;
 		this.takeProfit = takeProfit;
+		this.volume = volume;
 		this.quantity = quantity;
 		this.action = action;
+		this.counterBar = counterBar;
 		this.time = time;
 		this.status = status;	
 	}
 	
+	
+
 	public void writeStringToFile(String path, String stToWrite) throws IOException {
 	  PrintWriter out = null;
 	    BufferedWriter bufWriter;
@@ -64,8 +85,21 @@ public class order {
 	}
 	
 	
-	
-	
+	public double getLimitOrder() {
+		return limitOrder;
+	}
+
+	public void setLimitOrder(double limitOrder) {
+		this.limitOrder = limitOrder;
+	}
+	public int getTypeOrdr() {
+		return typeOrdr;
+	}
+
+	public void setTypeOrdr(int typeOrdr) {
+		this.typeOrdr = typeOrdr;
+	}
+
 	
 	public int getCounterBar() {
 		return counterBar;
@@ -93,16 +127,21 @@ public class order {
 		this.idServer = idServer;
 	}
 
-
-	public double getOrderPrice() {
-		return orderPrice;
+	public double getEnterPrice() {
+		return enterPrice;
 	}
 
-
-	public void setOrderPrice(double orderPrice) {
-		this.orderPrice = orderPrice;
+	public void setEnterPrice(double enterPrice) {
+		this.enterPrice = enterPrice;
 	}
 
+	public long getVolume() {
+		return volume;
+	}
+
+	public void setVolume(long volume) {
+		this.volume = volume;
+	}
 
 	public double getStop() {
 		return stop;
@@ -124,12 +163,12 @@ public class order {
 	}
 
 
-	public double getQuantity() {
+	public int getQuantity() {
 		return quantity;
 	}
 
 
-	public void setQuantity(double quantity) {
+	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
 
