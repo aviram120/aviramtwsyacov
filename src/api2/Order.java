@@ -23,13 +23,14 @@ public class Order {
 	private int action;//buy - 1; sell - 2;
 	private long time;
 	private boolean isActive;//if the order is active or unactive
+	private int counterArr;//the index of the bar in the arrGraph
 
 	private FutureOrder enter;
 	private FutureOrder stop;
 	private FutureOrder takeProfit;
 
 
-	public Order(int id, int quantity, int action, long time,
+	public Order(int id, int quantity, int action, long time,int counterArr,
 			int typeOrdrEnter,double enterPrice,double limitPrice,//for enterPrice
 			double stopPrice,
 			double takeProfitPrice
@@ -47,6 +48,7 @@ public class Order {
 		this.quantity = quantity;
 		this.action = action;
 		this.time = time;
+		this.counterArr = counterArr;
 		this.isActive = true; 
 
 		this.enter = new FutureOrder(typeOrdrEnter, enterPrice, limitPrice);	
@@ -54,11 +56,45 @@ public class Order {
 		this.takeProfit = new FutureOrder(takeProfitPrice, 0);
 	}
 
+	public void updateOrder(long time,int counterArr,double enterPrice,double limitOrder,double stopPrice,double takeProfitPrice)
+	{//the function update the order price
+		
+		this.time = time;
+		this.counterArr = counterArr;
+		
+		this.enter.updateEnterOrder(enterPrice, limitOrder);
+		this.stop.updateStopOrder(stopPrice);
+		this.takeProfit.updateTakeProfitOrder(takeProfitPrice);
+		
+		
+	}
+	public void cencelOrder()
+	{//this function cancel the order
+		
+		this.isActive = false;
+		this.enter.setStatus(CANCEl);
+		this.stop.setStatus(CANCEl);
+		this.takeProfit.setStatus(CANCEl);
+		
+	}
 
 
 
 
 	
+	public int getCounterArr() {
+		return counterArr;
+	}
+
+
+
+
+
+
+	public void setCounterArr(int counterArr) {
+		this.counterArr = counterArr;
+	}
+
 	public int getId() {
 		return id;
 	}

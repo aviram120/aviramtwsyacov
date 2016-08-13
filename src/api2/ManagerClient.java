@@ -79,7 +79,9 @@ public class ManagerClient {
 
 		
 		//TODO- read from file - to get update
-		//algoTrade(false);
+		//canSearchForNewOrder();
+		
+		algoTrade(false, -1);//only for test
 		counter++;
 	}
 
@@ -93,8 +95,10 @@ public class ManagerClient {
 	//*******************************************************
 	//**************ALGORITHM
 	//*******************************************************
-	private void algoTrade(boolean haveFuterOrder)
-	{
+	private void algoTrade(boolean haveFuterOrder,int indexInList)
+	{//the function search for triger in graph, if find set a new order.
+		//the function input: 1. flag if the order allrdy have trigr and need to improve the triger(if true 'indexInList' is the index of the order in listOrder)
+		
 		double deltaHighToLow = arrData[counter].getHigh() - arrData[counter].getLow();
 
 		if ((arrData[counter].getVolume() >= this.objLocal.getMinVolume()) && 
@@ -102,12 +106,6 @@ public class ManagerClient {
 				(deltaHighToLow <= this.objLocal.getMaxBarSize()))
 		{
 			System.out.println("in algoTrade");
-			if (haveFuterOrder)
-			{//
-				//TODO-find the futer orders in the list			
-			}
-
-
 			//==============movingAver strategy==============
 			if (this.objLocal.getStrategy() == this.objLocal.MOVING_AVR)
 			{
@@ -127,9 +125,14 @@ public class ManagerClient {
 								" ,close: "+arrData[counter].getClose()+
 								" ,volume: "+arrData[counter].getVolume());
 
-						setNewOrder(arrData[counter].getHigh(), arrData[counter].getLow(),arrData[counter].getTime());
-
-
+						if (haveFuterOrder)//update order
+						{
+							updateOrder(indexInList, arrData[counter].getHigh(), arrData[counter].getLow(),arrData[counter].getTime());
+						}
+						else//new order
+						{
+							setNewOrder(arrData[counter].getHigh(), arrData[counter].getLow(),arrData[counter].getTime());
+						}
 
 					}
 				}
@@ -151,14 +154,84 @@ public class ManagerClient {
 								" ,low: "+arrData[counter-1].getLow()+
 								" ,close: "+arrData[counter-1].getClose()+
 								" ,volume: "+arrData[counter-1].getVolume());
-
-						setNewOrder(arrData[counter-1].getHigh(),arrData[counter-1].getLow(),arrData[counter].getTime());
+						
+						if (haveFuterOrder)//update order
+						{
+							updateOrder(indexInList, arrData[counter].getHigh(), arrData[counter].getLow(),arrData[counter].getTime());
+						}
+						else
+						{//set new order
+							setNewOrder(arrData[counter-1].getHigh(),arrData[counter-1].getLow(),arrData[counter].getTime());
+						}
+						
 
 					}
 				}
 			}
 		}
 
+	}
+	private void updateOrder(int indexInList,double high, double low,long time)
+	{//the function update the order. indexInList- index of the order in the listOrder
+		
+		double deltaHighToLow = high - low;
+		double enterPrice = 0;
+		double stopPrice;
+		double takeProfitPrice;
+		double quantityDouble;
+		int quantityInt;
+		double limitOrder = -1;
+
+		//for long
+		if (this.objLocal.getDirection() == this.objLocal.LONG)
+		{	
+			enterPrice = high + this.objLocal.getAddCentToBreak();//enter - price
+			stopPrice = high - (this.objLocal.getBarTriger() * deltaHighToLow);//stop - price
+			takeProfitPrice = high + (deltaHighToLow * this.objLocal.getPe());//take - profit
+
+			if (this.objGlobal.getOrderType() == this.objGlobal.STOP_LIMIT)
+			{
+				limitOrder = enterPrice + (deltaHighToLow * this.objGlobal.getCentToGiveup());//limit order
+			}
+
+			System.err.println("in updateOrder: " + "enterPrice: " + enterPrice
+					+ " stopPrice: " + stopPrice
+					+ " takeProfitPrice: " + takeProfitPrice
+					+ " quantity: " + this.listOrders.get(indexInList).getQuantity()
+					+ " limitOrder: " + limitOrder
+					);
+			
+			//update order in list
+			listOrders.get(indexInList).updateOrder(time,this.counter,enterPrice,limitOrder,stopPrice,takeProfitPrice);
+			//TODO- send order to BROKER - update order
+
+		}
+
+		//for short
+		if (this.objLocal.getDirection() == this.objLocal.SHORT)
+		{
+
+			enterPrice = low - this.objLocal.getAddCentToBreak();//enter - price
+			stopPrice = low + (this.objLocal.getBarTriger() * deltaHighToLow);//stop - price
+			takeProfitPrice = low - (deltaHighToLow * this.objLocal.getPe());//take - profit
+
+			if (this.objGlobal.getOrderType() == this.objGlobal.STOP_LIMIT)
+			{
+				limitOrder = enterPrice - (deltaHighToLow * this.objGlobal.getCentToGiveup());//limit order
+			}
+
+			System.err.println("in setNewOrder: " + "enterPrice: " + enterPrice
+					+ " stopPrice: " + stopPrice
+					+ " takeProfitPrice: " + takeProfitPrice
+					+ " quantity: " + this.listOrders.get(indexInList).getQuantity()
+					+ " limitOrder: " + limitOrder
+					);
+			//update order in list
+			listOrders.get(indexInList).updateOrder(time,this.counter,enterPrice,limitOrder,stopPrice,takeProfitPrice);
+			//TODO- send order to BROKER - update order
+		}
+		
+		
 	}
 	private void setNewOrder(double high, double low,long time)
 	{//the calculate the orders by the data
@@ -199,11 +272,12 @@ public class ManagerClient {
 					+ " limitOrder: " + limitOrder
 					);
 
-			Order tempOrder = new Order(listOrders.size()+1,quantityInt,BUY,time,
+			Order tempOrder = new Order(listOrders.size()+1,quantityInt,BUY,time,this.counter,
 					this.objGlobal.getOrderType(),enterPrice,limitOrder, 
 					stopPrice,
 					takeProfitPrice
 					);
+			
 			//TODO- send order to BROKER
 			listOrders.add(tempOrder);
 		}
@@ -237,12 +311,7 @@ public class ManagerClient {
 					+ " limitOrder: " + limitOrder
 					);
 
-			/*public Order(int id, int quantity, int action, long time,
-			int typeOrdrEnter,double enterPrice,double limitPrice,//for enterPrice
-			double stopPrice,
-			double takeProfitPrice
-			)*/
-			Order tempOrder = new Order(listOrders.size()+1,quantityInt,SELL,time,
+			Order tempOrder = new Order(listOrders.size()+1,quantityInt,SELL,time,this.counter,
 					this.objGlobal.getOrderType(),enterPrice,limitOrder, 
 					stopPrice,
 					takeProfitPrice
@@ -255,7 +324,8 @@ public class ManagerClient {
 
 	}
 	private void canSearchForNewOrder()
-	{
+	{//the function decide if can set new order - if yes call to 'algoTrade' function
+		//Additionally if have orders that wait try to find new triger
 
 		if (!this.objGlobal.getStopRobot())
 		{
@@ -266,7 +336,7 @@ public class ManagerClient {
 				{	
 					if (listOrders.size() == 0)//where is no order
 					{
-						algoTrade(false);//run alogTread
+						algoTrade(false,-1);//run alogTread
 						return;
 					}
 					
@@ -277,23 +347,42 @@ public class ManagerClient {
 					{
 						if (counActiveOrders == 0)//there is no future orders that wait
 						{//run alogTread
-							algoTrade(false);
+							algoTrade(false,-1);
 							return;
 						}
-					}
-					
-					for (int i = 0; i<listOrders.size(); i++)
+					}	
+				}
+				
+				//Future orders- try to find new trigr
+				for (int i = 0; i<listOrders.size(); i++)
+				{
+					if (listOrders.get(i).getEnter().getStatus() == WAIT)//if the enter order is wait to execute
 					{
-						if (listOrders.get(i).getEnter().getStatus() == WAIT)//if the enter order is wait to execute
+						int numOfBar = this.counter - listOrders.get(i).getCounterArr();//number of bar that pass since placing order
+						if (numOfBar < objLocal.getNumBarToCancelDeal())
 						{
-							algoTrade(true);//to find a new bar 
+							algoTrade(true,i);//to find a new bar
 						}
-						
+						else
+						{
+							cancelOrder(i);
+						}
 					}
 				}
+				
 			}
 		}
-	}//finish class	
+	}
+	
+	private void cancelOrder(int indexInList) 
+	{//the funcion update the status of the object at list
+		//and send to broker , cancel the order
+		
+		listOrders.get(indexInList).cencelOrder();
+		//TODO - cancel order in broker
+		
+		
+	}
 	private boolean checkEarlierTime(String timeToBreak)
 	{//the function get time in format(hh:mm), and return true if current time bar is before the input time
 
@@ -325,7 +414,10 @@ public class ManagerClient {
 		}
 	}
 	private int countActiveOrders()
-	{
+	{//the function return number of the order that: 
+		//1.Transactions entered into action
+		//2.Transactions awaiting execution trigger
+		
 		int countActiveOrders = 0;
 		for (int i = 0; i < listOrders.size(); i++)
 		{

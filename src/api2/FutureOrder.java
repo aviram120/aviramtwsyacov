@@ -54,7 +54,22 @@ public class FutureOrder {
 		this.typeOrdr = LIMIT;
 		this.takeProfitPrice = takeProfitPrice;
 	}
-
+	
+	
+	
+	public void updateEnterOrder(double enterPrice,double limitPrice)
+	{
+		this.enterPrice = enterPrice;
+		this.limitPrice = limitPrice;// if not used -1
+	}
+	public void updateStopOrder(double stopPrice)
+	{
+		this.stopPrice = stopPrice;
+	}
+	public void updateTakeProfitOrder(double takeProfitPrice)
+	{
+		this.takeProfitPrice = takeProfitPrice;
+	}
 	
 	
 	
