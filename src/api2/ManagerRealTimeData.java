@@ -45,7 +45,7 @@ public class ManagerRealTimeData implements EWrapper {
 
 
 
-	public ManagerRealTimeData(int threadId, globalVar tempGlobal, localVar tempLocal)
+	public ManagerRealTimeData(int threadId, globalVar tempGlobal, localVar tempLocal,int portNumberToserverChat)
 	{
 		this.threadId = threadId;
 		this.objGlobal = tempGlobal;
@@ -58,7 +58,7 @@ public class ManagerRealTimeData implements EWrapper {
 		arrFiveSec = new fiveSec[this.NUMBER_OF_RECORDS_BY_INTERVAL];
 		countResponseFromTws = 0;
 		
-		mngClient = new ManagerClient(threadId, tempGlobal, tempLocal);
+		mngClient = new ManagerClient(threadId, tempGlobal, tempLocal,portNumberToserverChat);
 		
 		getBarsByInterval();
 	}

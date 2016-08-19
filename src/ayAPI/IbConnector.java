@@ -8,9 +8,11 @@ import com.ib.client.ContractDetails;
 import com.ib.client.EClientSocket;
 import com.ib.client.EWrapper;
 import com.ib.client.Execution;
+import com.ib.client.ExecutionFilter;
 import com.ib.client.Order;
 import com.ib.client.OrderState;
 import com.ib.client.UnderComp;
+import com.ib.controller.AccountSummaryTag;
 import com.ib.controller.Types.MktDataType;
 
 public class IbConnector implements EWrapper{
@@ -22,6 +24,10 @@ public class IbConnector implements EWrapper{
 
 	private int nextOrderID = 0;// Keep track of the next ID
 	private EClientSocket client = null;// The IB API Client Socket object
+
+	private double totalCashValue;//of use in updateAccountValue 
+	private double realizedPnL;//of use in updateAccountValue 
+
 
 	public IbConnector(int connectionID)
 	{	
@@ -38,16 +44,16 @@ public class IbConnector implements EWrapper{
 		}
 		//get the new valid nextOrderID - call automatic!
 	}
-	
+
 	public void disconnectFromBroker()
 	{
 		this.client.eDisconnect();
-		
+
 	}
 
 	public int placeNewOrder(OrderToExecute objOrder)
 	{//the function make the reqest to IB format
-		
+
 		//action = BUY, SELL
 		//orderType = LMT, STP, STP LMT, MKT
 
@@ -66,12 +72,12 @@ public class IbConnector implements EWrapper{
 		{order.m_action = "SELL";}
 
 		order.m_totalQuantity = objOrder.getQuantity();
-		
+
 		if (objOrder.getOca()!= -1)
 		{
 			order.m_ocaGroup = String.valueOf(objOrder.getOca());
 		}
-		
+
 
 
 		//set order type
@@ -97,23 +103,153 @@ public class IbConnector implements EWrapper{
 		order.m_auxPrice = objOrder.getPrice();//for STP orders only
 
 		this.client.placeOrder(nextOrderID,contract,order);
-		//this.client.eDisconnect();
-		
+
 		int IdOrder = nextOrderID;
 		nextOrderID++;
-		
+
 		return IdOrder;
 	}
-	
+
 	public void cancelOrder(int idServer)
 	{
-		client.cancelOrder(idServer);
+		client.cancelOrder(idServer);	
+	}
+
+	public void getCashInAccount() {
+		// TODO Auto-generated method stub
+
+		// build CSV string of attributes to request
+		StringBuilder attrStr = new StringBuilder();
+		for (AccountSummaryTag tag : AccountSummaryTag.values()) {
+			if (attrStr.length() > 0) { attrStr.append(','); }
+			attrStr.append(tag);
+		}
+
+
+
+
+
+		// request account summary
+		client.reqAccountSummary(0, "All", "TotalCashValue".toString());
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//wait for response
+	}
+
+
+	public void getAllPostion() {
+		// TODO Auto-generated method stub
+		client.reqPositions();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//wait for response
+	}
+	public int reqAccountUpdates(double maxRisk)
+	{
+		//ExecutionFilter tt = new ExecutionFilter();
+		//System.out.println(tt.m_acctCode);
+		int flagAns = 0;//false
 		
+		
+		//TODO- fix DU205140
+		client.reqAccountUpdates(true, "DU205140");
+		try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//wait for response
+		System.out.println("form reqAccountUpdates:"+this.totalCashValue);
+		System.out.println("form reqAccountUpdates:"+this.realizedPnL);
+		
+		if (this.totalCashValue/maxRisk>this.realizedPnL)
+		{
+			System.out.println("true");
+			flagAns = 1;
+		}
+		
+		return flagAns;
 	}
 
 
 
 
+
+	public void position(String account, Contract contract, int pos, double avgCost) {
+		String msg = " ---- Position begin ----\n"
+				+ "account = " + account + "\n"
+				+ "conid = " + contract.m_conId + "\n"
+				+ "symbol = " + contract.m_symbol + "\n"
+				+ "secType = " + contract.m_secType + "\n"
+				+ "expiry = " + contract.m_expiry + "\n"
+				+ "strike = " + contract.m_strike + "\n"
+				+ "right = " + contract.m_right + "\n"
+				+ "multiplier = " + contract.m_multiplier + "\n"
+				+ "exchange = " + contract.m_exchange + "\n"
+				+ "primaryExch = " + contract.m_primaryExch + "\n"
+				+ "currency = " + contract.m_currency + "\n"
+				+ "localSymbol = " + contract.m_localSymbol + "\n"
+				+ "tradingClass = " + contract.m_tradingClass + "\n"
+				+ "position = " + pos + "\n"
+				+ "averageCost = " + avgCost + "\n"
+				+ " ---- Position end ----\n";
+		System.out.println(msg);
+	}
+	public void updateAccountValue(String key, String value, String currency, String accountName) {
+
+		if ("TotalCashValue".equalsIgnoreCase(key))
+		{
+
+			this.totalCashValue = Double.parseDouble(value);
+			System.out.println(this.totalCashValue);
+		}
+		if ((("RealizedPnL".equalsIgnoreCase(key)&&("USD").equalsIgnoreCase(currency))))
+		{
+			this.realizedPnL = Double.parseDouble(value);
+			System.out.println(this.realizedPnL);
+		}
+
+		/*if  ( (("TotalCashValue".equalsIgnoreCase(key)))||
+				(("RealizedPnL".equalsIgnoreCase(key)&&("USD").equalsIgnoreCase(currency))) )
+		{
+			String msg = "  account = "  + accountName
+					+ "  tag = "      + key
+					+ "  value = "    + value
+					+ "  currency = " + currency;
+
+			System.out.println("TWSClientInterface:updateAccountValue -- "+msg);
+		}
+		 */
+	}
+
+	@Override
+	public void accountSummary(int reqId, String account, String tag, String value, String currency) {
+		String msg = "  reqId = "    + reqId
+				+ "  account = "  + account
+				+ "  tag = "      + tag
+				+ "  value = "    + value
+				+ "  currency = " + currency;
+
+		System.out.println(msg);
+		System.out.println(value);
+	}
+
+
+
+
+
+
+
+	@Override
+	public void accountSummaryEnd(int reqId) {
+		//System.out.println("TWSClientInterface:accountSummaryEnd(reqId)  was called");
+	}
 
 
 
@@ -205,12 +341,6 @@ public class IbConnector implements EWrapper{
 
 	}
 
-	@Override
-	public void updateAccountValue(String key, String value, String currency,
-			String accountName) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public void updatePortfolio(Contract contract, int position,
@@ -373,31 +503,12 @@ public class IbConnector implements EWrapper{
 
 	}
 
-	@Override
-	public void position(String account, Contract contract, int pos,
-			double avgCost) {
-		// TODO Auto-generated method stub
 
-	}
-
-	@Override
 	public void positionEnd() {
 		// TODO Auto-generated method stub
 
 	}
 
-	@Override
-	public void accountSummary(int reqId, String account, String tag,
-			String value, String currency) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void accountSummaryEnd(int reqId) {
-		// TODO Auto-generated method stub
-
-	}
 
 	@Override
 	public void verifyMessageAPI(String apiData) {
@@ -422,6 +533,10 @@ public class IbConnector implements EWrapper{
 		// TODO Auto-generated method stub
 
 	}
+
+
+
+
 
 
 

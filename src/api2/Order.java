@@ -59,6 +59,7 @@ public class Order {
 	public void updateOrder(long time,int counterArr,double enterPrice,double limitOrder,double stopPrice,double takeProfitPrice)
 	{//the function update the order price
 		
+		
 		this.time = time;
 		this.counterArr = counterArr;
 		

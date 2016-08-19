@@ -9,6 +9,7 @@ import ayAPI.Indicators;
 import ayAPI.barByInterval;
 import ayAPI.globalVar;
 import ayAPI.localVar;
+import ayAPI.managerBroker;
 
 
 
@@ -49,9 +50,10 @@ public class ManagerClient {
 	private int counter;
 
 	private Indicators indicatorsClass;
+	private managerBroker managerBroker;
 
 
-	public ManagerClient(int threadId, globalVar tempGlobal, localVar tempLocal)
+	public ManagerClient(int threadId, globalVar tempGlobal, localVar tempLocal,int portNumberToserverChat)
 	{
 		this.objGlobal = tempGlobal;
 		this.objLocal = tempLocal;
@@ -69,6 +71,8 @@ public class ManagerClient {
 		counter = 0;
 
 		indicatorsClass = new Indicators();//class for indicators
+		managerBroker = new managerBroker(threadId,portNumberToserverChat);
+		
 	}
 	public void addBarToGraph(barByInterval tempBar)
 	{//the function add the data to arrData that save the graph
@@ -157,7 +161,7 @@ public class ManagerClient {
 						
 						if (haveFuterOrder)//update order
 						{
-							updateOrder(indexInList, arrData[counter].getHigh(), arrData[counter].getLow(),arrData[counter].getTime());
+							updateOrder(indexInList, arrData[counter-1].getHigh(), arrData[counter-1].getLow(),arrData[counter-1].getTime());
 						}
 						else
 						{//set new order
@@ -278,7 +282,8 @@ public class ManagerClient {
 					takeProfitPrice
 					);
 			
-			//TODO- send order to BROKER
+			//managerBroker.placeOrder(this.symbol, tempOrder);
+			//TODO- send order to BROKER- need to pars the response with id of the orders
 			listOrders.add(tempOrder);
 		}
 
@@ -316,7 +321,9 @@ public class ManagerClient {
 					stopPrice,
 					takeProfitPrice
 					);
-			//TODO- send order to BROKER
+			
+			//managerBroker.placeOrder(this.symbol, tempOrder);
+			//TODO- send order to BROKER- need to pars the response with id of the orders
 			listOrders.add(tempOrder);
 
 		}

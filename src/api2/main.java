@@ -20,6 +20,7 @@ public class main {
 		localVar tempLocal;
 		ManagerRealTimeData newObj;
 		int threadId = 0;
+		int portNumberToserverChat = 1500;
 
 
 		//init - globalVar
@@ -54,7 +55,7 @@ public class main {
 				isAggressive, maxTransactionsPerDay,riskPerTransactionsDolars, maxRiskPerTransactionsDolars, extarPrice, pe, barTriger );
 
 		
-		newObj = new ManagerRealTimeData(threadId, tempGlobal, tempLocal);
+		newObj = new ManagerRealTimeData(threadId, tempGlobal, tempLocal,portNumberToserverChat);
 		
 
 

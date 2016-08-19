@@ -10,7 +10,7 @@ public class globalVar {
 	private int defineNextStop;
 	private int stopType;
 	private boolean b1;//*****************
-	private int maxRisk;
+	private double maxRisk;
 	private String timeStopAddOrder;//clear all Future provisions(in format- HH:mm)
 	private String timeCloseAllOrder;//(in format- HH:mm)
 	private boolean stopRobot;
@@ -19,7 +19,7 @@ public class globalVar {
 
 
 	public globalVar(int orderType, double centToGiveup, int defineNextStop,
-			int stopType, int maxRisk, String timeStopAddOrder,
+			int stopType, double maxRisk, String timeStopAddOrder,
 			String timeCloseAllOrder) {
 		
 		this.orderType = orderType;
@@ -63,7 +63,7 @@ public class globalVar {
 	public void setB1(boolean b1) {
 		this.b1 = b1;
 	}
-	public int getMaxRisk() {
+	public double getMaxRisk() {
 		return maxRisk;
 	}
 	public void setMaxRisk(int maxRisk) {
