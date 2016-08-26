@@ -5,6 +5,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Vector;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ayAPI.barByInterval;
 import ayAPI.fiveSec;
 import ayAPI.globalVar;
@@ -24,7 +27,7 @@ import com.ib.client.UnderComp;
 public class ManagerRealTimeData implements EWrapper {
 	//the class get real time data from broker , sent it to managerClient
 	
-
+	private static Logger Logger;
 	private globalVar objGlobal;
 	private localVar objLocal;
 
@@ -47,6 +50,8 @@ public class ManagerRealTimeData implements EWrapper {
 
 	public ManagerRealTimeData(int threadId, globalVar tempGlobal, localVar tempLocal,int portNumberToserverChat)
 	{
+		Logger = LoggerFactory.getLogger(ManagerRealTimeData.class);
+		
 		this.threadId = threadId;
 		this.objGlobal = tempGlobal;
 		this.objLocal = tempLocal;
@@ -80,7 +85,9 @@ public class ManagerRealTimeData implements EWrapper {
 		{
 			e.printStackTrace ();
 		}
-
+		
+		Logger.info("make request for RealTimeBars for symbol:{}",this.symbol);
+		
 		// Create a new contract
 		Contract contract = new Contract ();
 		contract.m_symbol = this.symbol;
@@ -103,7 +110,8 @@ public class ManagerRealTimeData implements EWrapper {
 
 		if (!this.isSync)//sync to system time
 		{
-			System.out.println("please wait whill sync");
+			//System.out.println("please wait whill sync");
+			Logger.info("please wait whill sync");
 			long mili = time*1000L;
 			int secondsStart = (int) (mili / 1000) % 60 ;
 			int minutesStart = (int) ((mili / (1000*60)) % 60);
@@ -113,7 +121,8 @@ public class ManagerRealTimeData implements EWrapper {
 				if (secondsStart == 0)
 				{
 					this.isSync = true;
-					System.out.println("is sync!");
+					//System.out.println("is sync!");
+					Logger.info("is sync!");
 					getHistoryByStrategy(mili);//get history
 				}
 				else
@@ -129,8 +138,9 @@ public class ManagerRealTimeData implements EWrapper {
 
 		try
 		{
-			System.out.println("realtimeBar: reqId: "+reqId +", time:"+ time + "," + open + "," + high + "," + low + "," + close + ",volume: " +volume + ", counter:"+countResponseFromTws);
-
+			String stDebug = "realtimeBar: reqId: "+reqId +", time:"+ time + "," + open + "," + high + "," + low + "," + close + ",volume: " +volume + ", counter:"+countResponseFromTws;
+			//System.out.println(stDebug);
+			//Logger.info(stDebug);
 			fiveSecObj = new fiveSec(time,open,high,low,close,volume,countResponseFromTws);
 			arrFiveSec[countResponseFromTws] = fiveSecObj;
 			countResponseFromTws++;
@@ -140,8 +150,9 @@ public class ManagerRealTimeData implements EWrapper {
 
 				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time,this.symbol);//make the bar values
 
-				System.err.println("barByInterval: barSize:"+this.INTERVAL_GRAPH+ " symbol:" + this.symbol+" , high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume());
-
+				String stBar = "barByInterval: barSize:"+this.INTERVAL_GRAPH+ " symbol:" + this.symbol+" , high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume();
+				System.err.println(stBar);
+				//Logger.info(stBar);
 				countResponseFromTws = 0;
 
 				//System.out.println(barObj.convertToJSON());
@@ -221,7 +232,7 @@ public class ManagerRealTimeData implements EWrapper {
 
 		try 
 		{
-			if (open!= -1)//if isn't and fo data
+			if (open!= -1)//if isn't and for data
 			{
 				String symbolTemp = this.symbol;
 				long timeTemp = convertDataToMilisec(date.toString());
@@ -235,7 +246,7 @@ public class ManagerRealTimeData implements EWrapper {
 
 				String outputSt = tempBar.convertToJSON();
 				System.err.println(outputSt);
-				
+				//Logger.info(outputSt);
 				sentDataToClient(tempBar);//send data
 			}
 		} 

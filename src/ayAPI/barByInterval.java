@@ -1,5 +1,8 @@
 package ayAPI;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -68,6 +71,16 @@ public class barByInterval {
 		this.type = type;
 	}
 	
+	public String getTimeInNY()
+	{
+		Date date = new Date(this.time*1000L);
+		SimpleDateFormat formatter= new SimpleDateFormat("HH:mm");
+		
+		date.setHours(date.getHours()-7);
+		String time = formatter.format(date);
+		
+		return time;
+	}
 	
 	public barByInterval(String st)
 	{

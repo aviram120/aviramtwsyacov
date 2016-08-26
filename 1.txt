@@ -1,0 +1,1 @@
+{"timeCloseAllOrder":"22:50","centToGiveup":0.5,"orderType":2,"maxRisk":10,"stopType":1,"timeStopAddOrder":"18:40","defineNextStop":6}

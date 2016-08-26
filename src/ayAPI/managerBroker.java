@@ -32,7 +32,7 @@ public class managerBroker {
 	
 	public managerBroker()
 	{//init BROKER class
-
+		
 	}
 
 	public managerBroker(int threadId,int portToBrokerServer)
@@ -41,12 +41,12 @@ public class managerBroker {
 		this.threadId = threadId;
 		int connectionId = 0;
 
-		//int portNumber = 1500;
+		
+		int portNumber = 1500;
 		String serverAddress = "localhost";
 		clientToBroker = new Client(serverAddress, portToBrokerServer, String.valueOf(this.threadId));
 		
 		//this.IB_Broker = new IbConnector(connectionId);
-
 	}
 
 	private String sendRequestToBroker(String stRequest)
@@ -131,14 +131,25 @@ public class managerBroker {
 				orderObj.getTakeProfit().getTakeProfitPrice(),
 				-1);
 
-		//int tkOrderNum = this.IB_Broker.placeNewOrder(takeProfitOrder);
 		String takeProfitOrderJson = takeProfitOrder.convertToJSON("placeNewOrder",this.threadId);
 		System.out.println(takeProfitOrderJson);
 		String stReturnTakeProfit = sendRequestToBroker(takeProfitOrderJson);
 		System.out.println(stReturnTakeProfit);
 		
-		System.out.println(stReturnEnter + "|" + stReturnStop + "|" + stReturnTakeProfit);
+		//convert the orders to json
+		JSONObject objOrders = new JSONObject();
+	      try {
+	    	  objOrders.put("enterOrder", stReturnEnter);
+	    	  objOrders.put("stopOrder", stReturnStop);
+	    	  objOrders.put("takeprofitOrder", stReturnTakeProfit);
+	    
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	    System.out.println(objOrders.toString());
 		
+		///System.out.println(stReturnEnter + "|" + stReturnStop + "|" + stReturnTakeProfit);
+	
 
 
 	}
@@ -172,7 +183,7 @@ public class managerBroker {
 	{
 		this.IB_Broker.getAllPostion();
 	}
-	public void reqAccountUpdates(double maxRisk)
+	public void reqForMaxRisk(double maxRisk)
 	{//maxRisk - in 10 (not 0.1)
 
 		//this.IB_Broker.reqAccountUpdates(maxRisk);
@@ -189,7 +200,16 @@ public class managerBroker {
 		System.out.println(sendRequestToBroker(obj.toString()));
 	}
 
-
+	public void updateOrder(String symbol, Order orderObj,int orderToUpdate)
+	{
+		
+		api2.updateOrder updateOrderTemp  = new api2.updateOrder(symbol, orderObj, orderToUpdate);
+		
+		String OrderJson = updateOrderTemp.convertToJSON("updateOrder",this.threadId);
+		System.out.println(OrderJson);
+		String stReturnStop = sendRequestToBroker(OrderJson);
+		
+	}
 
 	/////////*************test!
 	public static void main (String args[])
@@ -202,7 +222,7 @@ public class managerBroker {
 
 
 
-		String symbol = "BAC";
+		String symbol = "GS";
 		int id = 1;
 		int quantity = 100;
 		int action = BUY;
@@ -211,14 +231,16 @@ public class managerBroker {
 
 		//enter order
 		int typeOrderEnter = STP_LIMIT;
-		double enterPrice = 15.70;
-		double limitOrder = 15.90;
+		//int typeOrderEnter = STP;
+		double enterPrice = 170;
+		double limitOrder = 172;
+		//double limitOrder = -1;
 
 		//stop order
-		double stopPrice = 10;
+		double stopPrice = 160;
 
 		//tk order
-		double takeProfitPrice = 20;
+		double takeProfitPrice = 180;
 
 
 
@@ -227,14 +249,26 @@ public class managerBroker {
 				stopPrice,
 				takeProfitPrice);
 
-
-
-
-
-
+/*		//update takeprofit
+		tempOrder.getTakeProfit().setIdServer(42);
+		tempOrder.getTakeProfit().setTakeProfitPrice(184);
+		manBroker.updateOrder(symbol, tempOrder,3);*/
+		
+		/*//update stoploss
+		tempOrder.getStop().setIdServer(41);
+		tempOrder.getStop().setStopPrice(155);
+		manBroker.updateOrder(symbol, tempOrder,2);*/
+		
+		//update enter
+/*		tempOrder.getEnter().setIdServer(43);
+		tempOrder.getEnter().setEnterPrice(170);
+		tempOrder.getEnter().setLimitPrice(172);
+		manBroker.updateOrder(symbol, tempOrder,1);*/
+		
+		
 		manBroker.placeOrder(symbol,tempOrder);
 		//manBroker.cancelOrder(28);
-		//manBroker.reqAccountUpdates(10);
+		//manBroker.reqForMaxRisk(10);
 		
 		//manBroker.getCashInAccount();
 		//manBroker.getAllPostion();

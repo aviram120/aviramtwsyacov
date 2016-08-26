@@ -1,5 +1,8 @@
 package ayAPI;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class localVar {
 
 	public final int INSIDE_BAR = 1;
@@ -56,8 +59,83 @@ public class localVar {
 		this.extarPrice = extarPrice;
 		this.pe = pe;
 		this.barTriger = barTriger;
+	}	
+	public localVar(String st)
+	{
+		try {
+			JSONObject obj = new JSONObject(st);
+			
+			String symbol = obj.getString("symbol");
+			int strategy = obj.getInt("strategy");
+			int direction = obj.getInt("direction");
+			int movingAvrBar = obj.getInt("movingAvrBar");
+			int interval  = obj.getInt("interval");
+			int minVolume = obj.getInt("minVolume");
+			double minBarSize = obj.getDouble("minBarSize");
+			double maxBarSize = obj.getDouble("maxBarSize");
+			double addCentToBreak = obj.getDouble("addCentToBreak");
+			int numBarToCancelDeal = obj.getInt("numBarToCancelDeal");
+			boolean isAggressive = obj.getBoolean("isAggressive");
+			int maxTransactionsPerDay = obj.getInt("maxTransactionsPerDay");
+			double riskPerTransactionsDolars = obj.getDouble("riskPerTransactionsDolars");
+			double maxRiskPerTransactionsDolars = obj.getDouble("maxRiskPerTransactionsDolars");
+			double extarPrice = obj.getDouble("extarPrice");
+			double pe = obj.getDouble("pe");
+			double barTriger = obj.getDouble("barTriger");
+
+			
+			this.symbol = symbol;
+			this.strategy = strategy;
+			this.direction = direction;
+			this.movingAvrBar = movingAvrBar;
+			this.interval = interval;
+			this.minVolume = minVolume;
+			this.minBarSize = minBarSize;
+			this.maxBarSize = maxBarSize;
+			this.addCentToBreak = addCentToBreak;
+			this.numBarToCancelDeal = numBarToCancelDeal;
+			this.isAggressive = isAggressive;
+			this.maxTransactionsPerDay = maxTransactionsPerDay;
+			this.riskPerTransactionsDolars = riskPerTransactionsDolars;
+			this.maxRiskPerTransactionsDolars = maxRiskPerTransactionsDolars;
+			this.extarPrice = extarPrice;
+			this.pe = pe;
+			this.barTriger = barTriger;
+			
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
+	public String convertObjToJSON()
+	{
+		JSONObject obj = new JSONObject();
+		
+	      try {
+	    	obj.put("symbol", symbol);
+	    	obj.put("strategy", strategy);
+	    	obj.put("direction", direction);
+	    	obj.put("movingAvrBar", movingAvrBar);
+	    	obj.put("interval", interval);
+	    	obj.put("minVolume", minVolume);
+	    	obj.put("minBarSize", minBarSize);
+	    	obj.put("maxBarSize", maxBarSize);
+	    	obj.put("addCentToBreak", addCentToBreak);
+	    	obj.put("numBarToCancelDeal", numBarToCancelDeal);
+	    	obj.put("isAggressive", isAggressive);
+	    	obj.put("maxTransactionsPerDay", maxTransactionsPerDay);
+	    	obj.put("riskPerTransactionsDolars", riskPerTransactionsDolars);
+	    	obj.put("maxRiskPerTransactionsDolars", maxRiskPerTransactionsDolars);
+	    	obj.put("extarPrice", extarPrice);
+	    	obj.put("pe", pe);
+	    	obj.put("barTriger", barTriger);
+		    
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}  
+	   return obj.toString(); 	
+	}
 	
 	public int getMovingAvrBar() {
 		return movingAvrBar;

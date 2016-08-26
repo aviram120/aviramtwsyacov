@@ -1,0 +1,1 @@
+{"maxTransactionsPerDay":2,"symbol":"GS","interval":1,"direction":1,"maxBarSize":0.7,"addCentToBreak":0.03,"numBarToCancelDeal":6,"strategy":1,"maxRiskPerTransactionsDolars":250,"isAggressive":false,"movingAvrBar":-1,"extarPrice":0.07,"minBarSize":0.2,"pe":3,"barTriger":3,"minVolume":50000,"riskPerTransactionsDolars":150}

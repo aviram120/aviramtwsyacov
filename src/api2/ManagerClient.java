@@ -5,11 +5,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ayAPI.Indicators;
 import ayAPI.barByInterval;
 import ayAPI.globalVar;
 import ayAPI.localVar;
 import ayAPI.managerBroker;
+import ayAPI.order;
 
 
 
@@ -37,7 +41,7 @@ public class ManagerClient {
 	public final int STP_LIMIT = 3;
 	public final int LIMIT = 4;
 	
-
+	private static Logger Logger;
 
 	private globalVar objGlobal;
 	private localVar objLocal;
@@ -55,6 +59,8 @@ public class ManagerClient {
 
 	public ManagerClient(int threadId, globalVar tempGlobal, localVar tempLocal,int portNumberToserverChat)
 	{
+		Logger = LoggerFactory.getLogger(ManagerClient.class);
+		
 		this.objGlobal = tempGlobal;
 		this.objLocal = tempLocal;
 		this.threadId = threadId;
@@ -79,13 +85,18 @@ public class ManagerClient {
 		
 		arrData[counter] = new barByInterval(tempBar);
 
-		System.err.println("barByInterval from ManagerClient: symbol:"+ arrData[counter].getSymbol() +" , high:"+ arrData[counter].getHigh() +" , low: "+arrData[counter].getLow()+" ,open: "+arrData[counter].getOpen()+" , close: "+arrData[counter].getClose()+" , vol: "+arrData[counter].getVolume());
-
+		String dataFromBroker = "barByInterval = time:"+ arrData[counter].getTimeInNY() +" , high:"+ arrData[counter].getHigh() +" , low: "+arrData[counter].getLow()+" ,open: "+arrData[counter].getOpen()+" , close: "+arrData[counter].getClose()+" , vol: "+arrData[counter].getVolume();
+		//System.err.println(dataFromBroker);
+		Logger.info(dataFromBroker);
 		
 		//TODO- read from file - to get update
 		//canSearchForNewOrder();
-		
 		algoTrade(false, -1);//only for test
+		
+		//TODO - 
+		//updateStatusOrders();
+		//updateStopOrders();
+		
 		counter++;
 	}
 
@@ -110,25 +121,28 @@ public class ManagerClient {
 				(deltaHighToLow <= this.objLocal.getMaxBarSize()))
 		{
 			System.out.println("in algoTrade");
+			Logger.info("in algoTrade");
 			//==============movingAver strategy==============
 			if (this.objLocal.getStrategy() == this.objLocal.MOVING_AVR)
 			{
-				double movingAver = indicatorsClass.calculateMovingAverage(arrData, this.objLocal.getInterval() , counter);
+				double movingAver = indicatorsClass.calculateMovingAverage(arrData, this.objLocal.getMovingAvrBar() , counter);
 				//double movingAver10 = indicatorsClass.calculateMovingAverage(arrData, 10 , counter);
 
 				if (movingAver != -1)
 				{
 					if ((arrData[counter].getHigh()>movingAver) && (arrData[counter].getLow()<movingAver))
 					{
-
-						System.err.println("from algoTrade:"+ "strategy: "+"movingAver"+ 
+						String stOrderMovingAver = "from algoTrade:"+ "strategy: "+"movingAver"+ 
 								" ,time: "+arrData[counter].getTime() +
 								" ,open: "+arrData[counter].getOpen()+
 								" ,high: "+arrData[counter].getHigh()+
 								" ,low: "+arrData[counter].getLow()+
 								" ,close: "+arrData[counter].getClose()+
-								" ,volume: "+arrData[counter].getVolume());
-
+								" ,volume: "+arrData[counter].getVolume();
+						
+						//System.err.println(stOrderMovingAver);
+						Logger.info("movingAver set order:"+stOrderMovingAver);				
+						
 						if (haveFuterOrder)//update order
 						{
 							updateOrder(indexInList, arrData[counter].getHigh(), arrData[counter].getLow(),arrData[counter].getTime());
@@ -151,13 +165,17 @@ public class ManagerClient {
 
 					if ((arrData[counter].getHigh() <= arrData[counter-1].getHigh()) && (arrData[counter].getLow() >= arrData[counter-1].getLow()))
 					{
-						System.err.println("from algoTrade:"+ "strategy: "+"inside bar"+ 
+						String stOrderInsideBar = "from algoTrade:"+ "strategy: "+"inside bar"+ 
 								" ,time: "+arrData[counter-1].getTime() +
 								" ,open: "+arrData[counter-1].getOpen()+
 								" ,high: "+arrData[counter-1].getHigh()+
 								" ,low: "+arrData[counter-1].getLow()+
 								" ,close: "+arrData[counter-1].getClose()+
-								" ,volume: "+arrData[counter-1].getVolume());
+								" ,volume: "+arrData[counter-1].getVolume();
+						
+						Logger.info("inside-bar set order:"+stOrderInsideBar);
+						//System.err.println(stOrderInsideBar);
+						
 						
 						if (haveFuterOrder)//update order
 						{
@@ -167,8 +185,7 @@ public class ManagerClient {
 						{//set new order
 							setNewOrder(arrData[counter-1].getHigh(),arrData[counter-1].getLow(),arrData[counter].getTime());
 						}
-						
-
+					
 					}
 				}
 			}
@@ -269,13 +286,15 @@ public class ManagerClient {
 				limitOrder = enterPrice + (deltaHighToLow * this.objGlobal.getCentToGiveup());//limit order
 			}
 
-			System.err.println("in setNewOrder: " + "enterPrice: " + enterPrice
+			String stNewLongOrder = "in setNewOrder: " + "enterPrice: " + enterPrice
 					+ " stopPrice: " + stopPrice
 					+ " takeProfitPrice: " + takeProfitPrice
 					+ " quantity: " + quantityInt
-					+ " limitOrder: " + limitOrder
-					);
-
+					+ " limitOrder: " + limitOrder;
+			
+			//System.err.println(stNewLongOrder);
+			Logger.info("setNewOrder set long order:"+stNewLongOrder);
+			
 			Order tempOrder = new Order(listOrders.size()+1,quantityInt,BUY,time,this.counter,
 					this.objGlobal.getOrderType(),enterPrice,limitOrder, 
 					stopPrice,
@@ -285,6 +304,7 @@ public class ManagerClient {
 			//managerBroker.placeOrder(this.symbol, tempOrder);
 			//TODO- send order to BROKER- need to pars the response with id of the orders
 			listOrders.add(tempOrder);
+			//TODO- add to orders the idSrver of the order
 		}
 
 		//for short
@@ -309,12 +329,14 @@ public class ManagerClient {
 				limitOrder = enterPrice - (deltaHighToLow * this.objGlobal.getCentToGiveup());//limit order
 			}
 
-			System.err.println("in setNewOrder: " + "enterPrice: " + enterPrice
+			String stNewOrderShort = "in setNewOrder: " + "enterPrice: " + enterPrice
 					+ " stopPrice: " + stopPrice
 					+ " takeProfitPrice: " + takeProfitPrice
 					+ " quantity: " + quantityInt
-					+ " limitOrder: " + limitOrder
-					);
+					+ " limitOrder: " + limitOrder;
+			
+			//System.err.println(stNewOrderShort);
+			Logger.info("setNewOrder set short order:"+stNewOrderShort);
 
 			Order tempOrder = new Order(listOrders.size()+1,quantityInt,SELL,time,this.counter,
 					this.objGlobal.getOrderType(),enterPrice,limitOrder, 
@@ -332,7 +354,7 @@ public class ManagerClient {
 	}
 	private void canSearchForNewOrder()
 	{//the function decide if can set new order - if yes call to 'algoTrade' function
-		//Additionally if have orders that wait try to find new triger
+		//Additionally if have orders that 'wait' try to find new triger
 
 		if (!this.objGlobal.getStopRobot())
 		{
@@ -379,6 +401,166 @@ public class ManagerClient {
 				
 			}
 		}
+	}
+	private void updateStatusOrders()
+	{//the function update status orders(enter/stop/takeProfit) in listOrder
+		
+		for (Order orderTemp:listOrders)
+		{
+			if (orderTemp.getEnter().getStatus() == WAIT)//if ENTER order is wait
+			{
+				if (orderTemp.getAction() == orderTemp.BUY)//for buy
+				{
+					if (arrData[counter].getHigh() > orderTemp.getEnter().getEnterPrice())//order is active
+					{
+						System.out.println("order is active");
+						orderTemp.orderIsActive(counter);//update orders status						
+					}					
+				}
+				else///for sell
+				{
+					if (arrData[counter].getLow() < orderTemp.getEnter().getEnterPrice())
+					{
+						System.out.println("order is active");
+						orderTemp.orderIsActive(counter);//update orders status	
+					}
+				}
+			}
+			
+			if (orderTemp.getStop().getStatus() == ACTIVE)//if STOP order is active
+			{
+				if (orderTemp.getAction() == BUY)//for buy
+				{
+					if (arrData[counter].getLow() < orderTemp.getStop().getStopPrice())
+					{
+						System.out.println("order is not active - in stop");
+						orderTemp.closedOrder();
+					}
+				}
+				else///for sell
+				{
+					if (arrData[counter].getHigh() > orderTemp.getStop().getStopPrice())
+					{
+						System.out.println("order is not active - in stop");
+						orderTemp.closedOrder();
+					}
+				}	
+			}
+			
+			if (orderTemp.getTakeProfit().getStatus() == ACTIVE)//if TAKE_PROFIT order is active
+			{
+				if (orderTemp.getAction() == BUY)//for buy
+				{
+					if (arrData[counter].getHigh() > orderTemp.getTakeProfit().getTakeProfitPrice())
+					{
+						System.out.println("order is not active - in take profit");
+						orderTemp.closedOrder();
+					}
+				}
+				else///for sell
+				{
+					if (arrData[counter].getLow() < orderTemp.getTakeProfit().getTakeProfitPrice())
+					{
+						System.out.println("order is not active - in take profit");
+						orderTemp.closedOrder();
+					}
+				}	
+				
+			}
+			
+			
+			
+			
+			
+			
+		}//end for
+		
+		
+		
+	}
+	private void updateStopOrders()
+	{//function check if can update stop of all orders that active
+		
+		for (Order orderTemp:listOrders)
+		{
+			if (orderTemp.isActive())
+			{
+				//TODO- fix to when the order start
+				int numOfBar = this.counter - orderTemp.getCounterArrWhenOrderIsActive();//number of bar that past from the deal start
+				
+				if (numOfBar >= objGlobal.getDefineNextStop())
+				{
+					if (objGlobal.getStopType() == objGlobal.STOP_LOW_OR_HIGHT)
+					{
+						if(objLocal.getDirection() == objLocal.LONG)
+						{
+							//TODO- add delta-talk with hagi
+							double lowOfBar = arrData[orderTemp.getCounterArr()].getLow() - objLocal.getExtarPrice();
+							if (arrData[counter].getClose() <= lowOfBar)
+							{//close the order in market
+								
+								//TODO-sent to broket to closed the deal
+								orderTemp.closedOrder();
+							}
+							else
+							{
+								orderTemp.getStop().setStopPrice(lowOfBar);
+								//TODO- sent to broker to update the stop price
+							}	
+						}
+						else//for short
+						{
+							//TODO- add delta-talk with hagi
+							double highOfBar = arrData[orderTemp.getCounterArr()].getHigh() + objLocal.getExtarPrice();
+							if (arrData[counter].getClose() >= highOfBar)
+							{//close the order in market
+
+								//TODO-sent to broket to closed the deal
+								orderTemp.closedOrder();
+							}
+							else
+							{
+								orderTemp.getStop().setStopPrice(highOfBar);
+								//TODO- sent to broker to update the stop price		
+							}
+							
+						}
+					}
+					else//objGlobal.STOP_IN_CLOSED
+					{
+						if(objLocal.getDirection() == objLocal.LONG)
+						{
+							double lowOfBarTriger = arrData[orderTemp.getCounterArr()].getLow();
+							double lowCurrentBar = arrData[counter].getLow();
+							
+							if (lowOfBarTriger > lowCurrentBar)
+							{//set new stop
+								
+								//TODO- add delta-talk with hagi
+								double newStop = lowCurrentBar - objLocal.getExtarPrice();
+								orderTemp.getStop().setStopPrice(newStop);
+								//TODO- sent to broker to update the stop price		
+							}
+						}
+						else//for short
+						{
+							double highOfBarTriger = arrData[orderTemp.getCounterArr()].getHigh();
+							double highCurrentBar = arrData[counter].getHigh();
+							
+							if (highOfBarTriger < highCurrentBar)
+							{
+								//TODO- add delta-talk with hagi
+								double newStop = highCurrentBar + objLocal.getExtarPrice();
+								orderTemp.getStop().setStopPrice(newStop);
+								//TODO- sent to broker to update the stop price
+							}
+						}			
+					}
+					
+				}	
+			}	
+		}//end for
+		
 	}
 	
 	private void cancelOrder(int indexInList) 

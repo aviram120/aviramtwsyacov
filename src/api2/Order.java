@@ -24,10 +24,12 @@ public class Order {
 	private long time;
 	private boolean isActive;//if the order is active or unactive
 	private int counterArr;//the index of the bar in the arrGraph
-
+	private int counterArrWhenOrderIsActive;
+	
 	private FutureOrder enter;
 	private FutureOrder stop;
 	private FutureOrder takeProfit;
+	
 
 
 	public Order(int id, int quantity, int action, long time,int counterArr,
@@ -49,7 +51,7 @@ public class Order {
 		this.action = action;
 		this.time = time;
 		this.counterArr = counterArr;
-		this.isActive = true; 
+		this.isActive = false; 
 
 		this.enter = new FutureOrder(typeOrdrEnter, enterPrice, limitPrice);	
 		this.stop = new FutureOrder(stopPrice);
@@ -78,8 +80,21 @@ public class Order {
 		this.takeProfit.setStatus(CANCEl);
 		
 	}
-
-
+	public void orderIsActive(int counterArrWhenOrderIsActive)
+	{
+		this.counterArrWhenOrderIsActive = counterArrWhenOrderIsActive;
+		this.isActive = true;
+		this.enter.setStatus(CLOSED);
+		this.stop.setStatus(ACTIVE);
+		this.takeProfit.setStatus(ACTIVE);	
+	}
+	
+	public void closedOrder()
+	{
+		this.isActive = false;
+		this.stop.setStatus(CLOSED);
+		this.takeProfit.setStatus(CLOSED);
+	}
 
 
 	
@@ -91,6 +106,13 @@ public class Order {
 
 
 
+	public int getCounterArrWhenOrderIsActive() {
+		return counterArrWhenOrderIsActive;
+	}
+
+	public void setCounterArrWhenOrderIsActive(int counterArrWhenOrderIsActive) {
+		this.counterArrWhenOrderIsActive = counterArrWhenOrderIsActive;
+	}
 
 	public void setCounterArr(int counterArr) {
 		this.counterArr = counterArr;
@@ -156,88 +178,33 @@ public class Order {
 		this.action = action;
 	}
 
-
-
-
-
 	public long getTime() {
 		return time;
 	}
-
-
-
-
-
 	public void setTime(long time) {
 		this.time = time;
 	}
-
-
-
-
-
 	public FutureOrder getEnter() {
 		return enter;
 	}
-
-
-
-
-
 	public void setEnter(FutureOrder enter) {
 		this.enter = enter;
 	}
-
-
-
-
-
 	public FutureOrder getStop() {
 		return stop;
 	}
-
-
-
-
-
 	public void setStop(FutureOrder stop) {
 		this.stop = stop;
 	}
-
-
-
-
-
 	public FutureOrder getTakeProfit() {
 		return takeProfit;
 	}
-
-
-
-
-
 	public void setTakeProfit(FutureOrder takeProfit) {
 		this.takeProfit = takeProfit;
 	}
-
-
-
-
-
-
-
-
-
-
-
 	public boolean isActive() {
 		return isActive;
 	}
-
-
-
-
-
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}

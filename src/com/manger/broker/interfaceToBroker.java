@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import api2.OrderToExecute;
+import api2.updateOrder;
 import ayAPI.IbConnector;
 
 public class interfaceToBroker {
@@ -58,6 +59,12 @@ public class interfaceToBroker {
 				int answer = IB_Broker.reqAccountUpdates(maxRisk);
 
 				return answer;
+			}
+			if (("updateOrder").equalsIgnoreCase(function))
+			{
+
+				updateOrder orderToUpdate = new updateOrder(message);
+				IB_Broker.updateOrder(orderToUpdate);
 			}
 		
 

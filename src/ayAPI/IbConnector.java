@@ -1,6 +1,7 @@
 package ayAPI;
 
 import api2.OrderToExecute;
+import api2.updateOrder;
 
 import com.ib.client.CommissionReport;
 import com.ib.client.Contract;
@@ -108,6 +109,48 @@ public class IbConnector implements EWrapper{
 		nextOrderID++;
 
 		return IdOrder;
+	}
+	public void updateOrder(updateOrder orderToUpdate)
+	{
+		Contract contract = new Contract();
+		Order order = new Order();
+
+		contract.m_symbol = orderToUpdate.getSymbol();     // For combo order use “USD” as the symbol value all the time
+		contract.m_secType = "STK";   // BAG is the security type for COMBO order
+		contract.m_exchange = "SMART";
+		contract.m_currency = "USD";
+
+		
+		//set action
+		if (orderToUpdate.getAction() == orderToUpdate.BUY)
+		{order.m_action = "buy";}
+		if (orderToUpdate.getAction() == orderToUpdate.SELL)
+		{order.m_action = "SELL";}
+
+		order.m_totalQuantity = orderToUpdate.getQuantity();
+		
+		//set order type
+		switch(orderToUpdate.getTypeOrder()){
+		
+		case STP:
+			order.m_orderType = "STP";
+			break;
+
+		case STP_LIMIT:
+			order.m_orderType = "STP LMT";
+			order.m_lmtPrice = orderToUpdate.getLimitPrice();//only for stop limit order
+			break;
+
+		case LIMIT:
+			order.m_orderType = "LMT";
+			order.m_lmtPrice = orderToUpdate.getOrderPriceUpdate();//only for take profit
+			break;
+		}
+		order.m_auxPrice = orderToUpdate.getOrderPriceUpdate();//for STP orders only
+
+
+		this.client.placeOrder(orderToUpdate.getIdSrver(),contract,order);
+
 	}
 
 	public void cancelOrder(int idServer)
@@ -533,6 +576,7 @@ public class IbConnector implements EWrapper{
 		// TODO Auto-generated method stub
 
 	}
+
 
 
 
