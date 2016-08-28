@@ -67,7 +67,11 @@ public class ManagerRealTimeData implements EWrapper {
 		
 		getBarsByInterval();
 	}
-
+	public void disconnect()
+	{
+		this.client.cancelRealTimeBars(0);
+		this.client.eDisconnect();
+	}
 
 
 	public void getBarsByInterval()
