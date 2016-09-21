@@ -8,12 +8,11 @@ public class main {
 		startJframeHTTP();
 	}
 	
-
 	private static void startJframeHTTP(){
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					JframeHTTP frame = new JframeHTTP();
+					JframeVaribalseLocGlob frame = new JframeVaribalseLocGlob();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -22,5 +21,4 @@ public class main {
 		});
 
 	}
-
 }
