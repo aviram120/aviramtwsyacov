@@ -16,7 +16,7 @@ import java.awt.event.ActionEvent;
 import ayAPI.globalVar;
 import ayAPI.localVar;
 
-public class JframeVaribalseLocGlob extends JFrame {
+public class JframeVaribalseLocGlobOld1 extends JFrame {
 	//gui elements
 	JPanel contentPane;
 	JPanel panel;
@@ -81,7 +81,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 	int threadId;
 	int portNumberToserverChat = 1500;
 
-	public JframeVaribalseLocGlob() {
+	public JframeVaribalseLocGlobOld1() {
 		initialize();
 	}
 
@@ -399,10 +399,9 @@ public class JframeVaribalseLocGlob extends JFrame {
 		tempLocal = new localVar(symbol, strategy, direction, movingAvr,interval, minVolume, minBarSize,maxBarSize, addCentToBreak, numBarToCancelDeal, 
 				isAggressive, maxTransactionsPerDay,riskPerTransactionsDolars, maxRiskPerTransactionsDolars, extarPrice, pe, barTriger );
 		
-		System.setProperty("symbol", tempLocal.getSymbol());
-		
 		//threadId
 		threadId = Integer.parseInt(textFieldThreadID.getText());
+		
 		newObj = new ManagerRealTimeData(threadId, tempGlobal, tempLocal, portNumberToserverChat);
 	}
 	
