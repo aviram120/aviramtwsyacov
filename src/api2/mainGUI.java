@@ -2,7 +2,7 @@ package api2;
 
 import java.awt.EventQueue;
 
-public class main {
+public class mainGUI {
 
 	public static void main(String[] args) {
 		startJframeHTTP();

@@ -84,7 +84,7 @@ public class JframeHTTP extends JFrame {
 		JLabel lblSingIn = new JLabel("Sing In");
 		lblSingIn.setFont(new Font("Tahoma", Font.PLAIN, 28));
 
-		JLabel lblAnsswer = new JLabel("");
+		final JLabel lblAnsswer = new JLabel("");
 		lblAnsswer.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		
 		JButton btnNewButton = new JButton("OK");

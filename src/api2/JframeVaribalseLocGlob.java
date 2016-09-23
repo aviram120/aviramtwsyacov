@@ -399,9 +399,10 @@ public class JframeVaribalseLocGlob extends JFrame {
 		tempLocal = new localVar(symbol, strategy, direction, movingAvr,interval, minVolume, minBarSize,maxBarSize, addCentToBreak, numBarToCancelDeal, 
 				isAggressive, maxTransactionsPerDay,riskPerTransactionsDolars, maxRiskPerTransactionsDolars, extarPrice, pe, barTriger );
 		
+		System.setProperty("symbol", tempLocal.getSymbol());
+		
 		//threadId
 		threadId = Integer.parseInt(textFieldThreadID.getText());
-		
 		newObj = new ManagerRealTimeData(threadId, tempGlobal, tempLocal, portNumberToserverChat);
 	}
 	
