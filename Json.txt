@@ -1,0 +1,2 @@
+{"timeCloseAllOrder":"22:50","centToGiveup":0.5,"orderType":2,"maxRisk":10,"stopType":2,"timeStopAddOrder":"18:40","defineNextStop":6}
+{"maxTransactionsPerDay":2,"symbol":"","interval":5,"direction":2,"maxBarSize":0.7,"addCentToBreak":0.03,"numBarToCancelDeal":6,"strategy":2,"maxRiskPerTransactionsDolars":250,"isAggressive":false,"movingAvrBar":5,"extarPrice":0.07,"minBarSize":0.2,"pe":3,"barTriger":3,"minVolume":50000,"riskPerTransactionsDolars":150}
