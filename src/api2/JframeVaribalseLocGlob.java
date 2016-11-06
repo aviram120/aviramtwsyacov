@@ -129,7 +129,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 	int portNumberToserverChat = 1500;
 
 	public JframeVaribalseLocGlob() {
-		if(authentication())
+		//if(authentication())
 			initialize();
 	}
 
@@ -189,155 +189,155 @@ public class JframeVaribalseLocGlob extends JFrame {
 		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 13));
 
 		lblOrdertype = new JLabel("orderType");
-		lblOrdertype.setBounds(106, 42, 145, 16);
+		lblOrdertype.setBounds(10, 42, 145, 16);
 		lblOrdertype.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblCenttogiveup = new JLabel("centToGiveup");
-		lblCenttogiveup.setBounds(106, 68, 85, 16);
+		lblCenttogiveup.setBounds(10, 68, 85, 16);
 		lblCenttogiveup.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblDefinenextstop = new JLabel("defineNextStop");
-		lblDefinenextstop.setBounds(106, 94, 91, 16);
+		lblDefinenextstop.setBounds(10, 94, 91, 16);
 		lblDefinenextstop.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblStoptype = new JLabel("stopType");
-		lblStoptype.setBounds(106, 120, 91, 16);
+		lblStoptype.setBounds(10, 120, 91, 16);
 		lblStoptype.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblMaxrisk = new JLabel("maxRisk");
-		lblMaxrisk.setBounds(106, 146, 91, 16);
+		lblMaxrisk.setBounds(10, 146, 91, 16);
 		lblMaxrisk.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblTimestopaddorder = new JLabel("timeStopAddOrder");
-		lblTimestopaddorder.setBounds(106, 172, 118, 16);
+		lblTimestopaddorder.setBounds(10, 172, 118, 16);
 		lblTimestopaddorder.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblTimecloseallorder = new JLabel("timeCloseAllOrder");
-		lblTimecloseallorder.setBounds(106, 198, 118, 16);
+		lblTimecloseallorder.setBounds(10, 198, 118, 16);
 		lblTimecloseallorder.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblSymbol = new JLabel("symbol");
-		lblSymbol.setBounds(369, 42, 118, 16);
+		lblSymbol.setBounds(273, 42, 118, 16);
 		lblSymbol.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		textFieldSymbol = new JTextField();
-		textFieldSymbol.setBounds(273, 40, 86, 20);
+		textFieldSymbol.setBounds(471, 40, 86, 20);
 		textFieldSymbol.setColumns(10);
 
 		lblStrategy = new JLabel("strategy");
-		lblStrategy.setBounds(369, 68, 118, 16);
+		lblStrategy.setBounds(273, 68, 118, 16);
 		lblStrategy.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblDirection = new JLabel("direction");
-		lblDirection.setBounds(369, 94, 118, 16);
+		lblDirection.setBounds(273, 94, 118, 16);
 		lblDirection.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblMovingAvr = new JLabel("movingAvr");
-		lblMovingAvr.setBounds(369, 120, 118, 16);
+		lblMovingAvr.setBounds(273, 120, 118, 16);
 		lblMovingAvr.setFont(new Font("Tahoma", Font.PLAIN, 13));			
 
 		lblInterval = new JLabel("interval");
-		lblInterval.setBounds(369, 146, 118, 16);
+		lblInterval.setBounds(273, 146, 118, 16);
 		lblInterval.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblMinvolume = new JLabel("minVolume");
-		lblMinvolume.setBounds(369, 172, 118, 16);
+		lblMinvolume.setBounds(273, 172, 118, 16);
 		lblMinvolume.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblMinbarsize = new JLabel("minBarSize");
-		lblMinbarsize.setBounds(369, 198, 118, 16);
+		lblMinbarsize.setBounds(273, 198, 118, 16);
 		lblMinbarsize.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblMaxbarsize = new JLabel("maxBarSize");
-		lblMaxbarsize.setBounds(369, 224, 118, 16);
+		lblMaxbarsize.setBounds(273, 224, 118, 16);
 		lblMaxbarsize.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblIsaggressive = new JLabel("isAggressive");
-		lblIsaggressive.setBounds(369, 302, 118, 16);
+		lblIsaggressive.setBounds(273, 302, 118, 16);
 		lblIsaggressive.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblAddcenttobreak = new JLabel("addCentToBreak");
-		lblAddcenttobreak.setBounds(369, 250, 118, 16);
+		lblAddcenttobreak.setBounds(273, 250, 118, 16);
 		lblAddcenttobreak.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblNumbartocanceldeal = new JLabel("numBarToCancelDeal");
-		lblNumbartocanceldeal.setBounds(369, 276, 136, 16);
+		lblNumbartocanceldeal.setBounds(273, 276, 136, 16);
 		lblNumbartocanceldeal.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblMaxtransactionsperday = new JLabel("maxTransactionsPerDay");
-		lblMaxtransactionsperday.setBounds(369, 328, 153, 16);
+		lblMaxtransactionsperday.setBounds(273, 328, 153, 16);
 		lblMaxtransactionsperday.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblRiskpertransactionsdolars = new JLabel("riskPerTransactionsDolars");
-		lblRiskpertransactionsdolars.setBounds(369, 354, 153, 16);
+		lblRiskpertransactionsdolars.setBounds(273, 354, 153, 16);
 		lblRiskpertransactionsdolars.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblMaxriskpertransactionsdolars = new JLabel("maxRiskPerTransactionsDolars");
-		lblMaxriskpertransactionsdolars.setBounds(369, 380, 188, 16);
+		lblMaxriskpertransactionsdolars.setBounds(273, 380, 188, 16);
 		lblMaxriskpertransactionsdolars.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblExtarprice = new JLabel("extarPrice");
-		lblExtarprice.setBounds(369, 406, 118, 16);
+		lblExtarprice.setBounds(273, 406, 118, 16);
 		lblExtarprice.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblPe = new JLabel("pe");
-		lblPe.setBounds(369, 432, 118, 16);
+		lblPe.setBounds(273, 432, 118, 16);
 		lblPe.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		lblBartriger = new JLabel("barTriger");
-		lblBartriger.setBounds(369, 458, 118, 16);
+		lblBartriger.setBounds(273, 458, 118, 16);
 		lblBartriger.setFont(new Font("Tahoma", Font.PLAIN, 13));
 
 		spinnerCentToGiveup = new JSpinner();
 		spinnerCentToGiveup.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerCentToGiveup.setBounds(10, 66, 86, 20);
+		spinnerCentToGiveup.setBounds(138, 66, 86, 20);
 
 		spinnerDefineNextStop = new JSpinner();
-		spinnerDefineNextStop.setBounds(10, 92, 86, 20);
+		spinnerDefineNextStop.setBounds(138, 92, 86, 20);
 
 		spinnerMaxRisk = new JSpinner();
-		spinnerMaxRisk.setBounds(10, 144, 86, 20);
+		spinnerMaxRisk.setBounds(138, 144, 86, 20);
 
 		spinnerMinVolume = new JSpinner();
-		spinnerMinVolume.setBounds(273, 170, 86, 20);
+		spinnerMinVolume.setBounds(471, 170, 86, 20);
 
 		spinnerMinBarSize = new JSpinner();
 		spinnerMinBarSize.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerMinBarSize.setBounds(273, 196, 86, 20);
+		spinnerMinBarSize.setBounds(471, 196, 86, 20);
 
 		spinnerMaxBarSize = new JSpinner();
 		spinnerMaxBarSize.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerMaxBarSize.setBounds(273, 222, 86, 20);
+		spinnerMaxBarSize.setBounds(471, 222, 86, 20);
 
 		spinnerAddCentToBreak = new JSpinner();
 		spinnerAddCentToBreak.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerAddCentToBreak.setBounds(273, 248, 86, 20);
+		spinnerAddCentToBreak.setBounds(471, 248, 86, 20);
 
 		spinnerNumBarToCancelDeal = new JSpinner();
-		spinnerNumBarToCancelDeal.setBounds(273, 274, 86, 20);
+		spinnerNumBarToCancelDeal.setBounds(471, 274, 86, 20);
 
 		spinnerMaxTransactionsPerDay = new JSpinner();
-		spinnerMaxTransactionsPerDay.setBounds(273, 326, 86, 20);
+		spinnerMaxTransactionsPerDay.setBounds(471, 326, 86, 20);
 
 		spinnerRiskPerTransactionsDolars = new JSpinner();
 		spinnerRiskPerTransactionsDolars.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerRiskPerTransactionsDolars.setBounds(273, 352, 86, 20);
+		spinnerRiskPerTransactionsDolars.setBounds(471, 352, 86, 20);
 
 		spinnerMaxRiskPerTransactionsDolars = new JSpinner();
 		spinnerMaxRiskPerTransactionsDolars.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerMaxRiskPerTransactionsDolars.setBounds(273, 378, 86, 20);
+		spinnerMaxRiskPerTransactionsDolars.setBounds(471, 379, 86, 20);
 
 		spinnerExtarPrice = new JSpinner();
 		spinnerExtarPrice.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerExtarPrice.setBounds(273, 404, 86, 20);
+		spinnerExtarPrice.setBounds(471, 404, 86, 20);
 
 		spinnerPe = new JSpinner();
 		spinnerPe.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerPe.setBounds(273, 430, 86, 20);
+		spinnerPe.setBounds(471, 430, 86, 20);
 
 		spinnerBarTriger = new JSpinner();
 		spinnerBarTriger.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
-		spinnerBarTriger.setBounds(273, 456, 86, 20);
+		spinnerBarTriger.setBounds(471, 456, 86, 20);
 
 		btnNewButton = new JButton("start");
 		btnNewButton.addActionListener(new ActionListener() {
@@ -357,33 +357,33 @@ public class JframeVaribalseLocGlob extends JFrame {
 		lblNewLabel_1.setBounds(10, 553, 65, 14);
 
 		comboBoxOrderType = new JComboBox(stringsOrderType);		
-		comboBoxOrderType.setBounds(10, 40, 86, 20);
+		comboBoxOrderType.setBounds(138, 41, 86, 20);
 
 		comboBoxStopType = new JComboBox(stringsStopType);
-		comboBoxStopType.setBounds(10, 118, 86, 20);
+		comboBoxStopType.setBounds(138, 118, 86, 20);
 
 		spinnerTimeStopaddOrder = new JSpinner(spinMod1);
 		spinnerTimeStopaddOrder.setEditor(new JSpinner.DateEditor(spinnerTimeStopaddOrder,"HH:mm"));
-		spinnerTimeStopaddOrder.setBounds(10, 170, 86, 20);
+		spinnerTimeStopaddOrder.setBounds(138, 170, 86, 20);
 
 		spinnerTimeCloseAllOrder = new JSpinner(spinMod2);
 		spinnerTimeCloseAllOrder.setEditor(new JSpinner.DateEditor(spinnerTimeCloseAllOrder,"HH:mm"));
-		spinnerTimeCloseAllOrder.setBounds(10, 196, 86, 20);
+		spinnerTimeCloseAllOrder.setBounds(138, 196, 86, 20);
 
 		comboBoxStrategy = new JComboBox(stringsStrategy);
-		comboBoxStrategy.setBounds(273, 66, 86, 20);
+		comboBoxStrategy.setBounds(471, 66, 86, 20);
 
 		comboBoxDirection = new JComboBox(stringsDirection);
-		comboBoxDirection.setBounds(273, 92, 86, 20);
+		comboBoxDirection.setBounds(471, 92, 86, 20);
 
 		comboBoxMovingAvr = new JComboBox(stringsMovingAvr);
-		comboBoxMovingAvr.setBounds(273, 118, 85, 20);
+		comboBoxMovingAvr.setBounds(471, 118, 85, 20);
 
 		comboBoxInterval = new JComboBox(stringsInterval);
-		comboBoxInterval.setBounds(273, 144, 86, 20);
+		comboBoxInterval.setBounds(471, 144, 86, 20);
 
 		comboBoxIsAggressive = new JComboBox(stringsIsAggressive);
-		comboBoxIsAggressive.setBounds(273, 300, 86, 20);
+		comboBoxIsAggressive.setBounds(471, 300, 86, 20);
 
 		spinnerThreadId = new JSpinner(modelTheradNumber);		
 		spinnerThreadId.setBounds(71, 550, 86, 20);
