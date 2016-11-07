@@ -129,7 +129,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 	int portNumberToserverChat = 1500;
 
 	public JframeVaribalseLocGlob() {
-		//if(authentication())
+		if(authentication())
 			initialize();
 	}
 
@@ -555,8 +555,8 @@ public class JframeVaribalseLocGlob extends JFrame {
 
 		System.setProperty("symbol", tempLocal.getSymbol());
 
-		Logger = LoggerFactory.getLogger(mainJar.class);
-		Logger.info("Hi, in mainGui {}", tempLocal.getSymbol());
+		Logger = LoggerFactory.getLogger(JframeVaribalseLocGlob.class);
+		Logger.info("Hi, in JframeVaribalseLocGlob symbol:{}", tempLocal.getSymbol());
 		Logger.info("print local var {}", tempLocal.convertObjToJSON());
 		Logger.info("print global var {}", tempGlobal.convertObjToJSON());
 
