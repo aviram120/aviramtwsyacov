@@ -90,7 +90,7 @@ public class ManagerRealTimeData implements EWrapper {
 			e.printStackTrace ();
 		}
 		
-		Logger.info("make request for RealTimeBars for symbol:{}",this.symbol);
+		Logger.info("make request for RealTimeBars for symbol: {}",this.symbol);
 		
 		// Create a new contract
 		Contract contract = new Contract ();
@@ -137,7 +137,9 @@ public class ManagerRealTimeData implements EWrapper {
 
 		}
 		
-
+		
+		this.mngClient.addFiveSecBar(time, open, high, low, close, volume);
+		/*
 		fiveSec fiveSecObj;
 
 		try
@@ -167,7 +169,7 @@ public class ManagerRealTimeData implements EWrapper {
 		catch (Exception e)
 		{
 			e.printStackTrace ();
-		}
+		}*/
 
 	}
 	private void getHistoryByStrategy(long timeInMilisec)

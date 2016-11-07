@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import ayAPI.Indicators;
 import ayAPI.barByInterval;
+import ayAPI.fiveSec;
 import ayAPI.globalVar;
 import ayAPI.localVar;
 import ayAPI.managerBroker;
@@ -55,6 +56,10 @@ public class ManagerClient {
 
 	private Indicators indicatorsClass;
 	private managerBroker managerBroker;
+	
+	private int countResponseFromTws;
+	private final int NUMBER_OF_RECORDS_BY_INTERVAL;
+	private fiveSec[] arrFiveSec;//array to hold all 5-sec values.
 
 
 	public ManagerClient(int threadId, globalVar tempGlobal, localVar tempLocal,int portNumberToserverChat)
@@ -73,11 +78,17 @@ public class ManagerClient {
 		else
 		{barToAdd = tempLocal.getMovingAvrBar();}
 
-		arrData = new barByInterval[390/interval+barToAdd];
+		arrData = new barByInterval[(390/interval)+barToAdd];
 		counter = 0;
 
 		indicatorsClass = new Indicators();//class for indicators
 		managerBroker = new managerBroker(threadId,portNumberToserverChat);
+		
+		//for the arrFiveSec
+		this.NUMBER_OF_RECORDS_BY_INTERVAL =  tempLocal.getInterval()*60/5;
+		arrFiveSec = new fiveSec[this.NUMBER_OF_RECORDS_BY_INTERVAL];
+		countResponseFromTws = 0;
+		
 		
 	}
 	public void addBarToGraph(barByInterval tempBar)
@@ -85,7 +96,7 @@ public class ManagerClient {
 		
 		arrData[counter] = new barByInterval(tempBar);
 
-		String dataFromBroker = "barByInterval = time:"+ arrData[counter].getTimeInNY() +" , high:"+ arrData[counter].getHigh() +" , low: "+arrData[counter].getLow()+" ,open: "+arrData[counter].getOpen()+" , close: "+arrData[counter].getClose()+" , vol: "+arrData[counter].getVolume();
+		String dataFromBroker = "barByInterval = time:"+ arrData[counter] +" , high:"+ arrData[counter].getHigh() +" , low: "+arrData[counter].getLow()+" ,open: "+arrData[counter].getOpen()+" , close: "+arrData[counter].getClose()+" , vol: "+arrData[counter].getVolume();
 		//System.err.println(dataFromBroker);
 		Logger.info(dataFromBroker);
 		
@@ -94,12 +105,45 @@ public class ManagerClient {
 		algoTrade(false, -1);//only for test
 		
 		//TODO - 
-		//updateStatusOrders();
 		//updateStopOrders();
 		
 		counter++;
 	}
+	public void addFiveSecBar(long time,double open,double high,double low,double close,long volume){
+		
+		barByInterval barObj;
+		fiveSec fiveSecObj;
 
+		try
+		{
+			String stDebug = "realtimeBar: time:"+ time + "," + open + "," + high + "," + low + "," + close + ",volume: " +volume + ", counter:"+countResponseFromTws;
+			//System.out.println(stDebug);
+			//Logger.info(stDebug);
+			fiveSecObj = new fiveSec(time,open,high,low,close,volume,countResponseFromTws);
+
+			updateStatusOrders(time,high,low);
+			arrFiveSec[countResponseFromTws] = fiveSecObj;
+			countResponseFromTws++;
+
+			if (countResponseFromTws == NUMBER_OF_RECORDS_BY_INTERVAL)
+			{
+				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time,this.symbol);//make the bar values
+
+				String stBar = "barByInterval: barSize:"+this.interval+ " symbol:" + this.symbol+" , high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume();
+				System.err.println(stBar);
+				//Logger.info(stBar);
+				countResponseFromTws = 0;
+				//System.out.println(barObj.convertToJSON());
+				
+				addBarToGraph(barObj);//send data
+			}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace ();
+		}
+		
+	}
 
 
 
@@ -402,7 +446,7 @@ public class ManagerClient {
 			}
 		}
 	}
-	private void updateStatusOrders()
+	private void updateStatusOrders(long time, double priceHigh, double priceLow)
 	{//the function update status orders(enter/stop/takeProfit) in listOrder
 		
 		for (Order orderTemp:listOrders)
@@ -411,7 +455,7 @@ public class ManagerClient {
 			{
 				if (orderTemp.getAction() == orderTemp.BUY)//for buy
 				{
-					if (arrData[counter].getHigh() > orderTemp.getEnter().getEnterPrice())//order is active
+					if (priceHigh < orderTemp.getEnter().getEnterPrice())//order is active
 					{
 						System.out.println("order is active");
 						orderTemp.orderIsActive(counter);//update orders status						
@@ -419,7 +463,7 @@ public class ManagerClient {
 				}
 				else///for sell
 				{
-					if (arrData[counter].getLow() < orderTemp.getEnter().getEnterPrice())
+					if (priceLow > orderTemp.getEnter().getEnterPrice())
 					{
 						System.out.println("order is active");
 						orderTemp.orderIsActive(counter);//update orders status	
@@ -431,18 +475,18 @@ public class ManagerClient {
 			{
 				if (orderTemp.getAction() == BUY)//for buy
 				{
-					if (arrData[counter].getLow() < orderTemp.getStop().getStopPrice())
+					if (priceLow < orderTemp.getStop().getStopPrice())
 					{
 						System.out.println("order is not active - in stop");
-						orderTemp.closedOrder();
+						orderTemp.closedOrder(1);
 					}
 				}
 				else///for sell
 				{
-					if (arrData[counter].getHigh() > orderTemp.getStop().getStopPrice())
+					if (priceHigh > orderTemp.getStop().getStopPrice())
 					{
 						System.out.println("order is not active - in stop");
-						orderTemp.closedOrder();
+						orderTemp.closedOrder(1);
 					}
 				}	
 			}
@@ -451,32 +495,23 @@ public class ManagerClient {
 			{
 				if (orderTemp.getAction() == BUY)//for buy
 				{
-					if (arrData[counter].getHigh() > orderTemp.getTakeProfit().getTakeProfitPrice())
+					if (priceHigh > orderTemp.getTakeProfit().getTakeProfitPrice())
 					{
 						System.out.println("order is not active - in take profit");
-						orderTemp.closedOrder();
+						orderTemp.closedOrder(2);
 					}
 				}
 				else///for sell
 				{
-					if (arrData[counter].getLow() < orderTemp.getTakeProfit().getTakeProfitPrice())
+					if (priceLow < orderTemp.getTakeProfit().getTakeProfitPrice())
 					{
 						System.out.println("order is not active - in take profit");
-						orderTemp.closedOrder();
+						orderTemp.closedOrder(2);
 					}
 				}	
 				
-			}
-			
-			
-			
-			
-			
-			
-		}//end for
-		
-		
-		
+			}			
+		}//end for	
 	}
 	private void updateStopOrders()
 	{//function check if can update stop of all orders that active
@@ -500,7 +535,7 @@ public class ManagerClient {
 							{//close the order in market
 								
 								//TODO-sent to broket to closed the deal
-								orderTemp.closedOrder();
+								//orderTemp.closedOrder();
 							}
 							else
 							{
@@ -516,7 +551,7 @@ public class ManagerClient {
 							{//close the order in market
 
 								//TODO-sent to broket to closed the deal
-								orderTemp.closedOrder();
+								//orderTemp.closedOrder();
 							}
 							else
 							{
@@ -619,6 +654,7 @@ public class ManagerClient {
 		
 	}
 
+	
 
 		
 

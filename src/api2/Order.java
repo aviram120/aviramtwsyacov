@@ -89,11 +89,24 @@ public class Order {
 		this.takeProfit.setStatus(ACTIVE);	
 	}
 	
-	public void closedOrder()
+	public void closedOrder(int orderType)
 	{
-		this.isActive = false;
-		this.stop.setStatus(CLOSED);
-		this.takeProfit.setStatus(CLOSED);
+		if (orderType == 1)//for stop order
+		{
+			this.stop.setStatus(CLOSED);
+		}
+		if(orderType == 2)//for takeProfit order
+		{
+			this.takeProfit.setStatus(CLOSED);
+		}
+		
+		
+		if ((this.takeProfit.getStatus() == CLOSED ) &&( this.stop.getStatus() == CLOSED))
+		{
+			this.isActive = false;
+		}
+		
+		
 	}
 
 
