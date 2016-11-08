@@ -18,6 +18,7 @@ public class Order {
 
 
 	private int id;
+	private int idBroker;
 	private int oca;
 	private int quantity;
 	private int action;//buy - 1; sell - 2;
@@ -116,6 +117,13 @@ public class Order {
 	}
 
 
+	public int getIdBroker() {
+		return idBroker;
+	}
+
+	public void setIdBroker(int idBroker) {
+		this.idBroker = idBroker;
+	}
 
 
 

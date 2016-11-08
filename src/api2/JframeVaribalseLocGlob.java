@@ -143,11 +143,12 @@ public class JframeVaribalseLocGlob extends JFrame {
 	int portNumberToserverChat = 1500;
 
 	public JframeVaribalseLocGlob() {
-		//if(authentication())
-		initialize();
+		if(authentication())
+			initialize();
 	}
 
 	public void initialize(){	
+		
 		mapOrderType.put("Market", new Integer(1));
 		mapOrderType.put("Stop limit", new Integer(2));
 
@@ -474,7 +475,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 		panel.add(lblTimestopaddorder);
 		panel.add(lblTimecloseallorder);
 		panel.add(lblCenttogiveup);
-		panel.add(lblGlobal);
+		panel.add(lblGlobal);///TODO
 		panel.add(lblOrdertype);
 		panel.add(lblDefinenextstop);
 		panel.add(lblStoptype);
@@ -632,11 +633,25 @@ public class JframeVaribalseLocGlob extends JFrame {
 
 		//threadId
 		threadId = (int) spinnerThreadId.getValue();
-
+/*		
+		Date dNow = new Date( );
+	    SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
+		
+	    String stStrategy = "";
+	    if (tempLocal.getStrategy() == 1)
+	    {
+	    	stStrategy = "insideBar";
+	    }
+	    else
+	    {
+	    	stStrategy = "movingAvr";
+	    }
+		String stProperty = tempLocal.getSymbol() + "-" + ft.format(dNow).toString() + "-" + stStrategy;
+		System.out.println(stProperty);*/
 		System.setProperty("symbol", tempLocal.getSymbol());
-
-		Logger = LoggerFactory.getLogger(mainJar.class);
-		Logger.info("Hi, in mainGui {}", tempLocal.getSymbol());
+		
+		Logger = LoggerFactory.getLogger(mainGUI.class);
+		Logger.info("Hi, in mainGui symbol:{}", tempLocal.getSymbol());
 		Logger.info("print local var {}", tempLocal.convertObjToJSON());
 		Logger.info("print global var {}", tempGlobal.convertObjToJSON());
 

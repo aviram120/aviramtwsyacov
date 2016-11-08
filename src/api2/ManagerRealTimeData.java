@@ -251,7 +251,7 @@ public class ManagerRealTimeData implements EWrapper {
 				barByInterval tempBar = new barByInterval(symbolTemp, timeTemp, openTemp, highTemp, lowTemp, closeTemp, volumeTemp);
 
 				String outputSt = tempBar.convertToJSON();
-				System.err.println(outputSt);
+				//System.err.println(outputSt);
 				//Logger.info(outputSt);
 				sentDataToClient(tempBar);//send data
 			}

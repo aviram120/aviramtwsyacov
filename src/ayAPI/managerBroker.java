@@ -24,6 +24,9 @@ public class managerBroker {
 	public final static int STP_LIMIT = 3;
 	public final static int LIMIT = 4;
 
+	public final static int ENTER_ORDER = 1;
+	public final static int STOP_ORDER = 2;
+	public final static int TK_ORDER = 3;
 
 	private int threadId;
 	private IbConnector IB_Broker;
@@ -45,8 +48,7 @@ public class managerBroker {
 		int portNumber = 1500;
 		String serverAddress = "localhost";
 		clientToBroker = new Client(serverAddress, portToBrokerServer, String.valueOf(this.threadId));
-		
-		//this.IB_Broker = new IbConnector(connectionId);
+
 	}
 
 	private String sendRequestToBroker(String stRequest)
@@ -57,6 +59,7 @@ public class managerBroker {
 		this.clientToBroker.sendMessage(new ChatMessage(ChatMessage.MESSAGE, stRequest));
 
 		String stResponse = waitForAnswerFromBroker();
+		
 		this.clientToBroker.disconnect();
 		return stResponse;
 		
@@ -66,11 +69,10 @@ public class managerBroker {
 		String msg = "";
 		while(true) {
 			try {
+
 				msg = (String) this.clientToBroker.sInput.readObject();
-
+				this.clientToBroker.sendMessage(new ChatMessage(2, ""));//logout
 				break;
-				// if console mode print the message and add back the prompt
-
 			}
 			catch(IOException e) {
 				this.clientToBroker.disconnect();
@@ -82,6 +84,75 @@ public class managerBroker {
 		}
 		return msg;
 
+	}
+	private int setActionByEnterOrder(int actionEnter)
+	{
+		int newAction = 0;//for stop/take profit order
+		if (actionEnter == BUY)
+		{ newAction = SELL;}
+		else if (newAction == SELL)
+		{ newAction = BUY;}
+		
+		return newAction;
+		
+	}
+	public int placeOrderByType(String symbol, Order orderObj,int orderType)
+	{
+		if (ENTER_ORDER == orderType)
+		{
+			OrderToExecute enterOrder = new OrderToExecute(symbol,
+					orderObj.getAction(),
+					orderObj.getQuantity(),
+					-1,
+					orderObj.getEnter().getTypeOrdr(),
+					orderObj.getEnter().getEnterPrice(),
+					orderObj.getEnter().getLimitPrice());
+
+			String enterOrderJson = enterOrder.convertToJSON("placeNewOrder",this.threadId);
+			System.out.println(enterOrderJson);
+			String stReturnEnter = sendRequestToBroker(enterOrderJson);
+			System.out.println(stReturnEnter);
+			return Integer.parseInt(stReturnEnter);
+		}
+		
+		if (STOP_ORDER == orderType)
+		{
+			//stop order
+			OrderToExecute stopOrder = new OrderToExecute(symbol,
+					setActionByEnterOrder(orderObj.getAction()),
+					orderObj.getQuantity(),
+					orderObj.getOca(),
+					orderObj.getStop().getTypeOrdr(),
+					orderObj.getStop().getStopPrice(),
+					-1);
+
+			String stopOrderJson = stopOrder.convertToJSON("placeNewOrder",this.threadId);
+			System.out.println("stop order:"+stopOrderJson);
+			String stReturnStop = sendRequestToBroker(stopOrderJson);
+			System.out.println(stReturnStop);
+			return Integer.parseInt(stReturnStop);
+		}
+		
+		if (TK_ORDER == orderType)
+		{
+			//takeProfit order
+			OrderToExecute takeProfitOrder = new OrderToExecute(symbol,
+					setActionByEnterOrder(orderObj.getAction()),
+					orderObj.getQuantity(),
+					orderObj.getOca(),
+					orderObj.getTakeProfit().getTypeOrdr(),
+					orderObj.getTakeProfit().getTakeProfitPrice(),
+					-1);
+
+			String takeProfitOrderJson = takeProfitOrder.convertToJSON("placeNewOrder",this.threadId);
+			System.out.println("Tk order: " + takeProfitOrderJson);
+			String stReturnTakeProfit = sendRequestToBroker(takeProfitOrderJson);
+			System.out.println(stReturnTakeProfit);
+			
+			return Integer.parseInt(stReturnTakeProfit);
+		}
+		
+		return -1;
 	}
 	public void placeOrder(String symbol, Order orderObj)
 	{//place a order in broker. the function return the id of the order in the broker
@@ -147,11 +218,6 @@ public class managerBroker {
 			e.printStackTrace();
 		}
 	    System.out.println(objOrders.toString());
-		
-		///System.out.println(stReturnEnter + "|" + stReturnStop + "|" + stReturnTakeProfit);
-	
-
-
 	}
 	
 	public void getCashInAccount()
@@ -199,7 +265,21 @@ public class managerBroker {
 		System.out.println(obj.toString());
 		System.out.println(sendRequestToBroker(obj.toString()));
 	}
+	public void checkOrderStatus()
+	{
+		JSONObject obj = new JSONObject();
 
+		try {
+			obj.put("function", "checkStatus");
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		System.out.println(obj.toString());
+		System.out.println(sendRequestToBroker(obj.toString()));
+		
+	}
+	
 	public void updateOrder(String symbol, Order orderObj,int orderToUpdate)
 	{
 		
@@ -222,7 +302,7 @@ public class managerBroker {
 
 
 
-		String symbol = "GS";
+		String symbol = "GE";
 		int id = 1;
 		int quantity = 100;
 		int action = BUY;
@@ -230,17 +310,17 @@ public class managerBroker {
 		int counterArr = 5;
 
 		//enter order
-		int typeOrderEnter = STP_LIMIT;
+		int typeOrderEnter = MKT;
 		//int typeOrderEnter = STP;
-		double enterPrice = 170;
-		double limitOrder = 172;
+		double enterPrice = 30;
+		double limitOrder = 31;
 		//double limitOrder = -1;
 
 		//stop order
-		double stopPrice = 160;
+		double stopPrice = 20;
 
 		//tk order
-		double takeProfitPrice = 180;
+		double takeProfitPrice = 40;
 
 
 
@@ -265,8 +345,11 @@ public class managerBroker {
 		tempOrder.getEnter().setLimitPrice(172);
 		manBroker.updateOrder(symbol, tempOrder,1);*/
 		
-		
-		manBroker.placeOrder(symbol,tempOrder);
+		//**
+		int y = manBroker.placeOrderByType(symbol,tempOrder,2);
+		System.out.println("order STOP id:" + y);
+		int x = manBroker.placeOrderByType(symbol,tempOrder,3);
+		System.out.println("order TK id:" + x);
 		//manBroker.cancelOrder(28);
 		//manBroker.reqForMaxRisk(10);
 		
@@ -275,6 +358,7 @@ public class managerBroker {
 		//manBroker.reqAccountUpdates(10);
 		//manBroker.disconnectFromBroker();
 		
+		//manBroker.checkOrderStatus();
 
 
 

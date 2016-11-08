@@ -3,6 +3,7 @@ package api2;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -42,6 +43,10 @@ public class ManagerClient {
 	public final int STP_LIMIT = 3;
 	public final int LIMIT = 4;
 	
+	public final static int ENTER_ORDER = 1;
+	public final static int STOP_ORDER = 2;
+	public final static int TK_ORDER = 3;
+	
 	private static Logger Logger;
 
 	private globalVar objGlobal;
@@ -50,7 +55,7 @@ public class ManagerClient {
 	private String symbol;
 	private int interval;
 
-	private List<Order> listOrders;//list of all the order by sybmol
+	private LinkedList<Order> listOrders;//list of all the order by sybmol
 	private barByInterval[] arrData;//the graph
 	private int counter;
 
@@ -71,6 +76,8 @@ public class ManagerClient {
 		this.threadId = threadId;
 		this.symbol = tempLocal.getSymbol();
 		this.interval = tempLocal.getInterval();
+		this.listOrders = new LinkedList<Order>();
+				
 
 		int barToAdd = 0;
 		if (tempLocal.getStrategy() == INSIDE_BAR)
@@ -96,8 +103,7 @@ public class ManagerClient {
 		
 		arrData[counter] = new barByInterval(tempBar);
 
-		String dataFromBroker = "barByInterval = time:"+ arrData[counter] +" , high:"+ arrData[counter].getHigh() +" , low: "+arrData[counter].getLow()+" ,open: "+arrData[counter].getOpen()+" , close: "+arrData[counter].getClose()+" , vol: "+arrData[counter].getVolume();
-		//System.err.println(dataFromBroker);
+		String dataFromBroker = "barByInterval = time:"+ arrData[counter].getTimeInNY() +" , high:"+ arrData[counter].getHigh() +" , low: "+arrData[counter].getLow()+" ,open: "+arrData[counter].getOpen()+" , close: "+arrData[counter].getClose()+" , vol: "+arrData[counter].getVolume();
 		Logger.info(dataFromBroker);
 		
 		//TODO- read from file - to get update
@@ -122,6 +128,7 @@ public class ManagerClient {
 			fiveSecObj = new fiveSec(time,open,high,low,close,volume,countResponseFromTws);
 
 			updateStatusOrders(time,high,low);
+			
 			arrFiveSec[countResponseFromTws] = fiveSecObj;
 			countResponseFromTws++;
 
@@ -130,7 +137,7 @@ public class ManagerClient {
 				barObj = new barByInterval(arrFiveSec, NUMBER_OF_RECORDS_BY_INTERVAL, time,this.symbol);//make the bar values
 
 				String stBar = "barByInterval: barSize:"+this.interval+ " symbol:" + this.symbol+" , high:"+ barObj.getHigh() +" , low: "+barObj.getLow()+" ,open: "+barObj.getOpen()+" , close: "+barObj.getClose()+" , vol: "+barObj.getVolume();
-				System.err.println(stBar);
+
 				//Logger.info(stBar);
 				countResponseFromTws = 0;
 				//System.out.println(barObj.convertToJSON());
@@ -164,7 +171,6 @@ public class ManagerClient {
 				(deltaHighToLow >= this.objLocal.getMinBarSize()) &&
 				(deltaHighToLow <= this.objLocal.getMaxBarSize()))
 		{
-			System.out.println("in algoTrade");
 			Logger.info("in algoTrade");
 			//==============movingAver strategy==============
 			if (this.objLocal.getStrategy() == this.objLocal.MOVING_AVR)
@@ -193,7 +199,7 @@ public class ManagerClient {
 						}
 						else//new order
 						{
-							setNewOrder(arrData[counter].getHigh(), arrData[counter].getLow(),arrData[counter].getTime());
+							setNewOrder(arrData[counter].getHigh(), arrData[counter].getLow(),arrData[counter].getTime(),ENTER_ORDER);
 						}
 
 					}
@@ -227,7 +233,7 @@ public class ManagerClient {
 						}
 						else
 						{//set new order
-							setNewOrder(arrData[counter-1].getHigh(),arrData[counter-1].getLow(),arrData[counter].getTime());
+							setNewOrder(arrData[counter-1].getHigh(),arrData[counter-1].getLow(),arrData[counter].getTime(),ENTER_ORDER);
 						}
 					
 					}
@@ -298,7 +304,7 @@ public class ManagerClient {
 		
 		
 	}
-	private void setNewOrder(double high, double low,long time)
+	private void setNewOrder(double high, double low,long time, int orderType)
 	{//the calculate the orders by the data
 		
 		double deltaHighToLow = high - low;
@@ -336,7 +342,6 @@ public class ManagerClient {
 					+ " quantity: " + quantityInt
 					+ " limitOrder: " + limitOrder;
 			
-			//System.err.println(stNewLongOrder);
 			Logger.info("setNewOrder set long order:"+stNewLongOrder);
 			
 			Order tempOrder = new Order(listOrders.size()+1,quantityInt,BUY,time,this.counter,
@@ -344,11 +349,7 @@ public class ManagerClient {
 					stopPrice,
 					takeProfitPrice
 					);
-			
-			//managerBroker.placeOrder(this.symbol, tempOrder);
-			//TODO- send order to BROKER- need to pars the response with id of the orders
-			listOrders.add(tempOrder);
-			//TODO- add to orders the idSrver of the order
+			sendOrderToBroker(tempOrder, orderType);
 		}
 
 		//for short
@@ -379,7 +380,6 @@ public class ManagerClient {
 					+ " quantity: " + quantityInt
 					+ " limitOrder: " + limitOrder;
 			
-			//System.err.println(stNewOrderShort);
 			Logger.info("setNewOrder set short order:"+stNewOrderShort);
 
 			Order tempOrder = new Order(listOrders.size()+1,quantityInt,SELL,time,this.counter,
@@ -387,14 +387,15 @@ public class ManagerClient {
 					stopPrice,
 					takeProfitPrice
 					);
-			
-			//managerBroker.placeOrder(this.symbol, tempOrder);
-			//TODO- send order to BROKER- need to pars the response with id of the orders
-			listOrders.add(tempOrder);
-
+			sendOrderToBroker(tempOrder, orderType);
 		}
-
-
+	}
+	private void sendOrderToBroker(Order OrderToExec, int orderType)
+	{
+		//int idBroker = this.managerBroker.placeOrderByType(this.symbol, OrderToExec, orderType);
+		//OrderToExec.setIdBroker(idBroker);
+		//TODO - if idBroker==-1 => exption
+		listOrders.add(OrderToExec);		
 	}
 	private void canSearchForNewOrder()
 	{//the function decide if can set new order - if yes call to 'algoTrade' function
@@ -455,22 +456,27 @@ public class ManagerClient {
 			{
 				if (orderTemp.getAction() == orderTemp.BUY)//for buy
 				{
-					if (priceHigh < orderTemp.getEnter().getEnterPrice())//order is active
+					if (priceHigh >= orderTemp.getEnter().getEnterPrice())//order is active
 					{
-						System.out.println("order is active");
-						orderTemp.orderIsActive(counter);//update orders status						
+						Logger.info("enter order is active. order id: " + orderTemp.getId());
+						orderTemp.orderIsActive(counter);//update orders status
+						sendOrderToBroker(orderTemp, STOP_ORDER);
+						sendOrderToBroker(orderTemp, TK_ORDER);
 					}					
 				}
 				else///for sell
 				{
-					if (priceLow > orderTemp.getEnter().getEnterPrice())
+					if (priceLow <= orderTemp.getEnter().getEnterPrice())
 					{
-						System.out.println("order is active");
+						Logger.info("enter order is active. order id: " + orderTemp.getId());
 						orderTemp.orderIsActive(counter);//update orders status	
+						sendOrderToBroker(orderTemp, STOP_ORDER);
+						sendOrderToBroker(orderTemp, TK_ORDER);
 					}
 				}
 			}
 			
+		/*	
 			if (orderTemp.getStop().getStatus() == ACTIVE)//if STOP order is active
 			{
 				if (orderTemp.getAction() == BUY)//for buy
@@ -510,12 +516,14 @@ public class ManagerClient {
 					}
 				}	
 				
-			}			
+			}			*/
+			
 		}//end for	
 	}
 	private void updateStopOrders()
 	{//function check if can update stop of all orders that active
 		
+
 		for (Order orderTemp:listOrders)
 		{
 			if (orderTemp.isActive())

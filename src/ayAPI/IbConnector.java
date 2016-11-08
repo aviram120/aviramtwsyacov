@@ -1,5 +1,8 @@
 package ayAPI;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import api2.OrderToExecute;
 import api2.updateOrder;
 
@@ -29,9 +32,12 @@ public class IbConnector implements EWrapper{
 	private double totalCashValue;//of use in updateAccountValue 
 	private double realizedPnL;//of use in updateAccountValue 
 
-
+	//List<proprOrder> orderList;
+	
 	public IbConnector(int connectionID)
 	{	
+		
+		//orderList = new LinkedList<proprOrder>();
 		client = new EClientSocket (this);
 		client.eConnect (null, 7496, connectionID);
 
@@ -102,12 +108,13 @@ public class IbConnector implements EWrapper{
 			break;
 		}
 		order.m_auxPrice = objOrder.getPrice();//for STP orders only
-
+		System.out.println("nextOrderID****:"+nextOrderID);
 		this.client.placeOrder(nextOrderID,contract,order);
-
+				
 		int IdOrder = nextOrderID;
 		nextOrderID++;
 
+		System.out.println("IdOrder from broker:"+ IdOrder);
 		return IdOrder;
 	}
 	public void updateOrder(updateOrder orderToUpdate)
@@ -185,7 +192,7 @@ public class IbConnector implements EWrapper{
 
 	public void getAllPostion() {
 		// TODO Auto-generated method stub
-		client.reqPositions();
+		client.reqPositions();//return from function "position"
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
@@ -219,7 +226,17 @@ public class IbConnector implements EWrapper{
 		
 		return flagAns;
 	}
-
+	
+	public void reqAllOpenOrders()
+	{
+		this.client.reqAllOpenOrders();
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}//wait for response
+	}
 
 
 
@@ -285,6 +302,25 @@ public class IbConnector implements EWrapper{
 
 
 
+	public void orderStatus(int orderId, String status, int filled,
+			int remaining, double avgFillPrice, int permId, int parentId,
+			double lastFillPrice, int clientId, String whyHeld) {
+		
+		String msg = "orderId = " + orderId + "\n"
+				+  "status = " + status + "\n"
+				+  "filled = " + filled + "\n"
+				+  "remaining = " + remaining + "\n"
+				+  "avgFillPrice = " + avgFillPrice + "\n"
+				+  "permId = " + permId + "\n"
+				+  "parentId = " + parentId + "\n"
+				+  "lastFillPrice = " + lastFillPrice + "\n"
+				+ "clientId = " + clientId + "\n"
+				+ "whyHeld = " + whyHeld + "\n";
+
+		System.out.println(msg);
+		
+
+	}
 
 
 
@@ -363,13 +399,7 @@ public class IbConnector implements EWrapper{
 
 	}
 
-	@Override
-	public void orderStatus(int orderId, String status, int filled,
-			int remaining, double avgFillPrice, int permId, int parentId,
-			double lastFillPrice, int clientId, String whyHeld) {
-		// TODO Auto-generated method stub
-
-	}
+	
 
 	@Override
 	public void openOrder(int orderId, Contract contract, Order order,

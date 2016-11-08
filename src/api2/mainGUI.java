@@ -5,6 +5,7 @@ import java.awt.EventQueue;
 public class mainGUI {
 
 	public static void main(String[] args) {
+		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 		startJframeHTTP();
 	}
 	
