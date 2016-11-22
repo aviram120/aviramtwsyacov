@@ -103,12 +103,13 @@ public class JframeVaribalseLocGlob extends JFrame {
 	JSpinner spinnerExtarPrice;
 	JSpinner spinnerPe;
 	JSpinner spinnerBarTriger;
-	JButton btnNewButton;
+	JButton btnStart;
 	JButton btnStop;
 	JLabel lblNewLabel_1;
 	JComboBox comboBoxOrderType;
 	JButton btnOpenFile;
 	JButton btnSaveFile;
+	JButton btnUpdate;
 
 	String[] stringsOrderType = { "Market", "Stop limit" };//1,2
 	Map<String, Integer> mapOrderType = new HashMap<String, Integer>();
@@ -148,7 +149,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 	}
 
 	public void initialize(){	
-		
+
 		mapOrderType.put("Market", new Integer(1));
 		mapOrderType.put("Stop limit", new Integer(2));
 
@@ -355,14 +356,14 @@ public class JframeVaribalseLocGlob extends JFrame {
 		spinnerBarTriger.setModel(new SpinnerNumberModel(new Double(0), null, null, new Double(1)));
 		spinnerBarTriger.setBounds(471, 487, 86, 20);
 
-		btnNewButton = new JButton("start");
-		btnNewButton.addActionListener(new ActionListener() {
+		btnStart = new JButton("start");
+		btnStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				startAlgo();
 			}
 		});
-		btnNewButton.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		btnNewButton.setBounds(295, 543, 126, 31);
+		btnStart.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnStart.setBounds(295, 543, 126, 31);
 
 		btnStop = new JButton("stop");
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -421,7 +422,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 				}
 			}
 		});
-		
+
 		btnSaveFile = new JButton("Save");
 		btnSaveFile.setBounds(112, 11, 89, 23);
 		btnSaveFile.addActionListener(new ActionListener() {
@@ -470,7 +471,18 @@ public class JframeVaribalseLocGlob extends JFrame {
 				}
 			}
 		});
-		
+
+		btnUpdate = new JButton("update");
+		btnUpdate.setEnabled(false);
+		btnUpdate.setVisible(false);	
+		btnUpdate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				updateAlgo();	
+			}
+		});
+		btnUpdate.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		btnUpdate.setBounds(295, 543, 126, 31);
+
 		panel.setLayout(null);
 		panel.add(lblTimestopaddorder);
 		panel.add(lblTimecloseallorder);
@@ -512,7 +524,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 		panel.add(spinnerExtarPrice);			
 		panel.add(spinnerPe);		
 		panel.add(spinnerBarTriger);
-		panel.add(btnNewButton);			
+		panel.add(btnStart);			
 		panel.add(btnStop);			
 		panel.add(lblNewLabel_1);
 		panel.add(lblNewLabel);
@@ -527,7 +539,8 @@ public class JframeVaribalseLocGlob extends JFrame {
 		panel.add(comboBoxIsAggressive);
 		panel.add(spinnerThreadId);
 		panel.add(btnOpenFile);
-		panel.add(btnSaveFile);
+		panel.add(btnSaveFile);			
+		panel.add(btnUpdate);
 	}
 
 	private void readFileToGUI(String fileName)
@@ -633,10 +646,10 @@ public class JframeVaribalseLocGlob extends JFrame {
 
 		//threadId
 		threadId = (int) spinnerThreadId.getValue();
-/*		
+		/*		
 		Date dNow = new Date( );
 	    SimpleDateFormat ft = new SimpleDateFormat ("yyyy-MM-dd");
-		
+
 	    String stStrategy = "";
 	    if (tempLocal.getStrategy() == 1)
 	    {
@@ -649,13 +662,61 @@ public class JframeVaribalseLocGlob extends JFrame {
 		String stProperty = tempLocal.getSymbol() + "-" + ft.format(dNow).toString() + "-" + stStrategy;
 		System.out.println(stProperty);*/
 		System.setProperty("symbol", tempLocal.getSymbol());
-		
+
 		Logger = LoggerFactory.getLogger(mainGUI.class);
 		Logger.info("Hi, in mainGui symbol:{}", tempLocal.getSymbol());
 		Logger.info("print local var {}", tempLocal.convertObjToJSON());
 		Logger.info("print global var {}", tempGlobal.convertObjToJSON());
 
 		newObj = new ManagerRealTimeData(threadId, tempGlobal, tempLocal, portNumberToserverChat);
+
+		btnStart.setEnabled(false);
+		btnStart.setVisible(false);
+		btnUpdate.setEnabled(true);
+		btnUpdate.setVisible(true);
+		textFieldSymbol.setEnabled(false);
+		comboBoxStrategy.setEnabled(false);
+		comboBoxDirection.setEnabled(false);
+		comboBoxMovingAvr.setEnabled(false);
+		comboBoxInterval.setEnabled(false);
+	}
+
+	private void updateAlgo(){
+		//get globalVar
+		int orderType = mapOrderType.get(stringsOrderType[comboBoxOrderType.getSelectedIndex()]);
+		double centToGiveup = (double) spinnerCentToGiveup.getValue();
+		int defineNextStop = (int) spinnerDefineNextStop.getValue();
+		int stopType = mapStopType.get(stringsStopType[comboBoxStopType.getSelectedIndex()]);
+		double maxRisk = (double) spinnerMaxRisk.getValue();		
+		Calendar calendar = GregorianCalendar.getInstance();
+		calendar.setTime((Date) spinnerTimeStopaddOrder.getValue()); 								
+		String timeStopAddOrder = "" + calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+		calendar.setTime((Date) spinnerTimeCloseAllOrder.getValue());		
+		String timeCloseAllOrder = "" + calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+		tempGlobal = new globalVar(orderType,centToGiveup,defineNextStop,stopType,maxRisk,timeStopAddOrder, timeCloseAllOrder);
+
+		//get localVar
+		String symbol = textFieldSymbol.getText();
+		int strategy = mapStrategy.get(stringsStrategy[comboBoxStrategy.getSelectedIndex()]);
+		int direction = mapDirection.get(stringsDirection[comboBoxDirection.getSelectedIndex()]);		
+		int movingAvr = mapMovingAvr.get(stringsMovingAvr[comboBoxMovingAvr.getSelectedIndex()]);
+		int interval = mapInterval.get(stringsInterval[comboBoxInterval.getSelectedIndex()]);
+		int minVolume = (int) spinnerMinVolume.getValue();
+		double minBarSize = (double) spinnerMinBarSize.getValue();
+		double maxBarSize = (double) spinnerMaxBarSize.getValue();
+		double addCentToBreak = (double) spinnerAddCentToBreak.getValue();
+		int numBarToCancelDeal = (int) spinnerNumBarToCancelDeal.getValue();
+		boolean isAggressive = mapIsAggressive.get(stringsIsAggressive[comboBoxIsAggressive.getSelectedIndex()]);
+		int maxTransactionsPerDay = (int) spinnerMaxTransactionsPerDay.getValue();
+		double riskPerTransactionsDolars = (double) spinnerRiskPerTransactionsDolars.getValue();
+		double maxRiskPerTransactionsDolars = (double) spinnerMaxRiskPerTransactionsDolars.getValue();
+		double extarPrice = (double) spinnerExtarPrice.getValue();
+		double pe = (double) spinnerPe.getValue();
+		double barTriger = (double) spinnerBarTriger.getValue();
+		tempLocal = new localVar(symbol, strategy, direction, movingAvr,interval, minVolume, minBarSize,maxBarSize, addCentToBreak, numBarToCancelDeal, 
+				isAggressive, maxTransactionsPerDay,riskPerTransactionsDolars, maxRiskPerTransactionsDolars, extarPrice, pe, barTriger );
+
+		newObj.updateVars(tempGlobal, tempLocal);		
 	}
 
 	private void saveGuiToFile(globalVar global, localVar local,String fileName)
@@ -666,6 +727,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 
 		writeStringToFile(stGlobal + "\n" + stLocal, fileName);
 	}
+
 	private void writeStringToFile(String st,String fileName)
 	{//the fucntion write to file a string
 		BufferedWriter writer = null;
@@ -693,8 +755,6 @@ public class JframeVaribalseLocGlob extends JFrame {
 
 
 	}
-
-
 
 	private void stopAlgo(){
 		if(newObj != null)

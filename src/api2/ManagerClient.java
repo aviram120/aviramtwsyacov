@@ -151,10 +151,11 @@ public class ManagerClient {
 		}
 		
 	}
-
-
-
-
+	//TODO lock vars globalVar, tempLocal with mutex
+	public void updateVars(globalVar tempGlobal, localVar tempLocal){
+		this.objGlobal = tempGlobal;
+		this.objLocal = tempLocal;
+	}
 
 
 
