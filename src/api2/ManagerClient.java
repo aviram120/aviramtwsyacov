@@ -33,10 +33,13 @@ public class ManagerClient {
 	public final int BUY = 1;
 	public final int SELL = 2;
 	
-	public final int ACTIVE = 1;
+/*	public final int ACTIVE = 1;
 	public final int WAIT = 2;
 	public final int CLOSED = 3;
-	public final int CANCEl = 4;
+	public final int CANCEl = 4;*/
+	
+	public final int ACTIVE = 1;
+	public final int NOT_ACTIVE = 2;
 	
 	public final int MKT = 1;
 	public final int STP = 2;
@@ -188,7 +191,9 @@ public class ManagerClient {
 								" ,high: "+arrData[counter].getHigh()+
 								" ,low: "+arrData[counter].getLow()+
 								" ,close: "+arrData[counter].getClose()+
-								" ,volume: "+arrData[counter].getVolume();
+								" ,volume: "+arrData[counter].getVolume()+
+								" ,movingAver: "+movingAver+
+								" ,deltaHighToLow: "+deltaHighToLow;
 						
 						//System.err.println(stOrderMovingAver);
 						Logger.info("movingAver set order:"+stOrderMovingAver);				
@@ -221,7 +226,8 @@ public class ManagerClient {
 								" ,high: "+arrData[counter-1].getHigh()+
 								" ,low: "+arrData[counter-1].getLow()+
 								" ,close: "+arrData[counter-1].getClose()+
-								" ,volume: "+arrData[counter-1].getVolume();
+								" ,volume: "+arrData[counter-1].getVolume()+
+								" ,deltaHighToLow: "+deltaHighToLow;
 						
 						Logger.info("inside-bar set order:"+stOrderInsideBar);
 						//System.err.println(stOrderInsideBar);
@@ -342,7 +348,7 @@ public class ManagerClient {
 					+ " quantity: " + quantityInt
 					+ " limitOrder: " + limitOrder;
 			
-			Logger.info("setNewOrder set long order:"+stNewLongOrder);
+			Logger.info("setNewOrder set Long order:"+stNewLongOrder);
 			
 			Order tempOrder = new Order(listOrders.size()+1,quantityInt,BUY,time,this.counter,
 					this.objGlobal.getOrderType(),enterPrice,limitOrder, 
@@ -350,6 +356,10 @@ public class ManagerClient {
 					takeProfitPrice
 					);
 			sendOrderToBroker(tempOrder, orderType);
+			
+			Logger.info(", EnterStatus: " + tempOrder.getEnter().getStatus() +
+					", StopStatus: " + tempOrder.getStop().getStatus() +
+					", TkStatus: " + tempOrder.getTakeProfit().getStatus());
 		}
 
 		//for short
@@ -380,7 +390,7 @@ public class ManagerClient {
 					+ " quantity: " + quantityInt
 					+ " limitOrder: " + limitOrder;
 			
-			Logger.info("setNewOrder set short order:"+stNewOrderShort);
+			Logger.info("setNewOrder set Short order:"+stNewOrderShort);
 
 			Order tempOrder = new Order(listOrders.size()+1,quantityInt,SELL,time,this.counter,
 					this.objGlobal.getOrderType(),enterPrice,limitOrder, 
@@ -388,14 +398,29 @@ public class ManagerClient {
 					takeProfitPrice
 					);
 			sendOrderToBroker(tempOrder, orderType);
+			
+			Logger.info(", EnterStatus: " + tempOrder.getEnter().getStatus() +
+						", StopStatus: " + tempOrder.getStop().getStatus() +
+						", TkStatus: " + tempOrder.getTakeProfit().getStatus());
 		}
 	}
 	private void sendOrderToBroker(Order OrderToExec, int orderType)
 	{
-		//int idBroker = this.managerBroker.placeOrderByType(this.symbol, OrderToExec, orderType);
-		//OrderToExec.setIdBroker(idBroker);
+		String stLog =  " orderId: " + OrderToExec.getId() + 
+						", orderType: " + orderType ;
+		
+		if (orderType == ENTER_ORDER)//if it is 'ENTER_ORDER' need to add the order to list
+		{
+			listOrders.add(OrderToExec);
+			Logger.info("add new order to list." + stLog);
+		}
+		
+		int idBroker = this.managerBroker.placeOrderByType(this.symbol, OrderToExec, orderType);
+		OrderToExec.setIdBrokerOfOrder(idBroker,orderType);//set the idBroker in to order
+		String stLogAfter = "after send the order to BROKR. " + stLog +
+							" , idBroker: " + idBroker;
 		//TODO - if idBroker==-1 => exption
-		listOrders.add(OrderToExec);		
+				
 	}
 	private void canSearchForNewOrder()
 	{//the function decide if can set new order - if yes call to 'algoTrade' function
@@ -430,7 +455,7 @@ public class ManagerClient {
 				//Future orders- try to find new trigr
 				for (int i = 0; i<listOrders.size(); i++)
 				{
-					if (listOrders.get(i).getEnter().getStatus() == WAIT)//if the enter order is wait to execute
+					if (listOrders.get(i).getEnter().getStatus() == ACTIVE)//if the enter order is wait to execute
 					{
 						int numOfBar = this.counter - listOrders.get(i).getCounterArr();//number of bar that pass since placing order
 						if (numOfBar < objLocal.getNumBarToCancelDeal())
@@ -449,19 +474,25 @@ public class ManagerClient {
 	}
 	private void updateStatusOrders(long time, double priceHigh, double priceLow)
 	{//the function update status orders(enter/stop/takeProfit) in listOrder
-		
+
 		for (Order orderTemp:listOrders)
 		{
-			if (orderTemp.getEnter().getStatus() == WAIT)//if ENTER order is wait
+			if (orderTemp.getEnter().getStatus() == ACTIVE)//if ENTER order is wait
 			{
 				if (orderTemp.getAction() == orderTemp.BUY)//for buy
 				{
 					if (priceHigh >= orderTemp.getEnter().getEnterPrice())//order is active
+						//TODO - add limit
 					{
-						Logger.info("enter order is active. order id: " + orderTemp.getId());
-						orderTemp.orderIsActive(counter);//update orders status
+						orderTemp.EntetOrderIsExecute(counter);//update orders status
 						sendOrderToBroker(orderTemp, STOP_ORDER);
 						sendOrderToBroker(orderTemp, TK_ORDER);
+						String stLog = "order is active for long. order id: " + orderTemp.getId() + 
+										", EnterStatus: " + orderTemp.getEnter().getStatus() +
+										", StopStatus: " + orderTemp.getStop().getStatus() +
+										", TkStatus: " + orderTemp.getTakeProfit().getStatus();
+										
+						Logger.info(stLog);
 					}					
 				}
 				else///for sell
@@ -469,9 +500,17 @@ public class ManagerClient {
 					if (priceLow <= orderTemp.getEnter().getEnterPrice())
 					{
 						Logger.info("enter order is active. order id: " + orderTemp.getId());
-						orderTemp.orderIsActive(counter);//update orders status	
+						orderTemp.EntetOrderIsExecute(counter);//update orders status	
 						sendOrderToBroker(orderTemp, STOP_ORDER);
 						sendOrderToBroker(orderTemp, TK_ORDER);
+						
+						String stLog = "order is active for Short. order id: " + orderTemp.getId() + 
+								", EnterStatus: " + orderTemp.getEnter().getStatus() +
+								", StopStatus: " + orderTemp.getStop().getStatus() +
+								", TkStatus: " + orderTemp.getTakeProfit().getStatus();
+								
+						Logger.info(stLog);
+				
 					}
 				}
 			}

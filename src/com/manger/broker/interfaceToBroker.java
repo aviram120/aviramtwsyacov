@@ -27,8 +27,6 @@ public class interfaceToBroker {
 
 	public int executeFunction(String message)
 	{
-
-
 		String function ="";
 		try
 		{
@@ -41,9 +39,9 @@ public class interfaceToBroker {
 			if (("placeNewOrder").equalsIgnoreCase(function))
 			{
 				OrderToExecute orderToExext = new OrderToExecute(message);
-
+				
 				int orderId = IB_Broker.placeNewOrder(orderToExext);
-
+				
 				return orderId;
 			}
 			if (("cancelOrder").equalsIgnoreCase(function))
@@ -65,6 +63,13 @@ public class interfaceToBroker {
 
 				updateOrder orderToUpdate = new updateOrder(message);
 				IB_Broker.updateOrder(orderToUpdate);
+			}
+			if (("checkStatus").equalsIgnoreCase(function))
+			{
+				//IB_Broker.getAllPostion();
+				IB_Broker.reqAllOpenOrders();
+				return 0;
+			
 			}
 		
 

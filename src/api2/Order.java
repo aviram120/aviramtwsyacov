@@ -3,10 +3,13 @@ package api2;
 import java.util.Random;
 
 public class Order {
-	public final int ACTIVE = 1;
+	/*	public final int ACTIVE = 1;
 	public final int WAIT = 2;
 	public final int CLOSED = 3;
-	public final int CANCEl = 4;
+	public final int CANCEl = 4;*/
+	
+	public final int ACTIVE = 1;
+	public final int NOT_ACTIVE = 2;
 
 	public final int BUY = 1;
 	public final int SELL = 2;
@@ -18,12 +21,12 @@ public class Order {
 
 
 	private int id;
-	private int idBroker;
+
 	private int oca;
 	private int quantity;
 	private int action;//buy - 1; sell - 2;
 	private long time;
-	private boolean isActive;//if the order is active or unactive
+	private boolean isActive;//if the order is active or unactive(active if have stock)
 	private int counterArr;//the index of the bar in the arrGraph
 	private int counterArrWhenOrderIsActive;
 	
@@ -31,6 +34,9 @@ public class Order {
 	private FutureOrder stop;
 	private FutureOrder takeProfit;
 	
+	private int ENTER_ORDER = 1;
+	private int STOP_ORDER = 2;
+	private int TK_ORDER = 3;
 
 
 	public Order(int id, int quantity, int action, long time,int counterArr,
@@ -39,7 +45,6 @@ public class Order {
 			double takeProfitPrice
 			)
 	{
-
 		//general properties
 		this.id = id;
 
@@ -69,30 +74,29 @@ public class Order {
 		this.enter.updateEnterOrder(enterPrice, limitOrder);
 		this.stop.updateStopOrder(stopPrice);
 		this.takeProfit.updateTakeProfitOrder(takeProfitPrice);
-		
-		
 	}
 	public void cencelOrder()
 	{//this function cancel the order
 		
 		this.isActive = false;
-		this.enter.setStatus(CANCEl);
-		this.stop.setStatus(CANCEl);
-		this.takeProfit.setStatus(CANCEl);
+		this.enter.setStatus(NOT_ACTIVE);
+		this.stop.setStatus(NOT_ACTIVE);
+		this.takeProfit.setStatus(NOT_ACTIVE);
 		
 	}
-	public void orderIsActive(int counterArrWhenOrderIsActive)
+	public void EntetOrderIsExecute(int counterArrWhenOrderIsActive)
 	{
 		this.counterArrWhenOrderIsActive = counterArrWhenOrderIsActive;
 		this.isActive = true;
-		this.enter.setStatus(CLOSED);
+		this.enter.setStatus(NOT_ACTIVE);
 		this.stop.setStatus(ACTIVE);
 		this.takeProfit.setStatus(ACTIVE);	
 	}
 	
 	public void closedOrder(int orderType)
 	{
-		if (orderType == 1)//for stop order
+		//TODO - fix the function
+		/*if (orderType == 1)//for stop order
 		{
 			this.stop.setStatus(CLOSED);
 		}
@@ -105,7 +109,7 @@ public class Order {
 		if ((this.takeProfit.getStatus() == CLOSED ) &&( this.stop.getStatus() == CLOSED))
 		{
 			this.isActive = false;
-		}
+		}*/
 		
 		
 	}
@@ -117,12 +121,21 @@ public class Order {
 	}
 
 
-	public int getIdBroker() {
-		return idBroker;
-	}
-
-	public void setIdBroker(int idBroker) {
-		this.idBroker = idBroker;
+	public void setIdBrokerOfOrder(int idBroker, int orderType) {
+		
+		if (orderType == ENTER_ORDER)
+		{
+			this.enter.setIdBroker(idBroker);			
+		}
+		if (orderType == STOP_ORDER)
+		{
+			this.stop.setIdBroker(idBroker);
+		}
+		if( orderType == TK_ORDER)
+		{
+			this.takeProfit.setIdBroker(idBroker);
+		}
+		
 	}
 
 

@@ -62,6 +62,7 @@ public class localVar {
 	}	
 	public localVar(String st)
 	{
+		System.out.println(st);
 		try {
 			JSONObject obj = new JSONObject(st);
 			

@@ -103,7 +103,7 @@ public class managerBroker {
 			OrderToExecute enterOrder = new OrderToExecute(symbol,
 					orderObj.getAction(),
 					orderObj.getQuantity(),
-					-1,
+					-1,//ocaGruop
 					orderObj.getEnter().getTypeOrdr(),
 					orderObj.getEnter().getEnterPrice(),
 					orderObj.getEnter().getLimitPrice());

@@ -39,6 +39,7 @@ public class globalVar {
 	}
 	public globalVar(String st)
 	{
+		
 		try {
 			JSONObject obj = new JSONObject(st);
 			

@@ -31,10 +31,13 @@ public class ServerChat {
 	 *  server constructor that receive the port to listen to for connection as parameter
 	 *  in console
 	 */
+	
+	
+	
 	public ServerChat(int port) {
 		this(port, null);
 		
-		interfaceTWS = new interfaceToBroker();
+		//call to counstactor
 	}
 	
 	public ServerChat(int port, ServerGUI sg) {
@@ -152,6 +155,7 @@ public class ServerChat {
 		//String messageLf = time + " " + message + "\n";
 		String messageLf = messageInput;
 		// display message on console or GUI
+		
 		if(sg == null)
 			System.out.print(messageLf);
 		else
@@ -303,8 +307,8 @@ public class ServerChat {
 				// read a String (which is an object)
 				
 				try {
+					
 					cm = (ChatMessage) sInput.readObject();
-
 				}
 				catch (IOException e) {
 					display(username + " Exception reading Streams: " + e);
@@ -317,12 +321,12 @@ public class ServerChat {
 				String message = cm.getMessage();
 				
 				//TODO**********************************************
-			
-				
-				int returnNum = interfaceTWS.executeFunction(message);
-					
-				
-				
+				int returnNum = -1;
+				if (cm.getType() == ChatMessage.MESSAGE)
+				{
+					returnNum = interfaceTWS.executeFunction(message);
+				}
+
 				// Switch on the type of message receive
 				switch(cm.getType()) {
 

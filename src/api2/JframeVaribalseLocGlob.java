@@ -475,7 +475,7 @@ public class JframeVaribalseLocGlob extends JFrame {
 		panel.add(lblTimestopaddorder);
 		panel.add(lblTimecloseallorder);
 		panel.add(lblCenttogiveup);
-		panel.add(lblGlobal);///TODO
+		panel.add(lblGlobal);
 		panel.add(lblOrdertype);
 		panel.add(lblDefinenextstop);
 		panel.add(lblStoptype);

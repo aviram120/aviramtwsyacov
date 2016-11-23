@@ -67,7 +67,7 @@ public class updateOrder {
 
 		if (orderToUpdate == ENTER)
 		{
-			this.idSrver = orderObj.getEnter().getIdServer();
+			this.idSrver = orderObj.getEnter().getIdBroker();
 			this.action = orderObj.getAction();
 			this.typeOrder = orderObj.getEnter().getTypeOrdr();
 
@@ -84,7 +84,7 @@ public class updateOrder {
 
 		if (orderToUpdate == STOP)
 		{
-			this.idSrver = orderObj.getStop().getIdServer();
+			this.idSrver = orderObj.getStop().getIdBroker();
 			this.action = newAction;
 			this.typeOrder = orderObj.getStop().getTypeOrdr();
 
@@ -93,7 +93,7 @@ public class updateOrder {
 		}
 		if (orderToUpdate == TAKEPROFIT)
 		{
-			this.idSrver = orderObj.getTakeProfit().getIdServer();
+			this.idSrver = orderObj.getTakeProfit().getIdBroker();
 			this.action = newAction;
 			this.typeOrder = orderObj.getTakeProfit().getTypeOrdr();
 
