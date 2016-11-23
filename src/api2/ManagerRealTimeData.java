@@ -71,6 +71,7 @@ public class ManagerRealTimeData implements EWrapper {
 	{
 		this.client.cancelRealTimeBars(0);
 		this.client.eDisconnect();
+		Logger.info("####################Stop this algo and Disconnect from Broker####################");
 	}
 
 	public void updateVars(globalVar tempGlobal, localVar tempLocal){

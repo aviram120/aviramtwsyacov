@@ -37,6 +37,17 @@ public class globalVar {
 		this.timeCloseAllOrder = timeCloseAllOrder;
 		//this.stopRobot = stopRobot;
 	}
+	public void updateObject(globalVar tempGlobal)
+	{
+		this.orderType = tempGlobal.orderType;
+		this.centToGiveup = tempGlobal.centToGiveup;
+		this.defineNextStop = tempGlobal.defineNextStop;
+		this.stopType = tempGlobal.stopType;
+		this.maxRisk = tempGlobal.maxRisk;
+		this.timeStopAddOrder = tempGlobal.timeStopAddOrder;
+		this.timeCloseAllOrder = tempGlobal.timeCloseAllOrder;
+		
+	}
 	public globalVar(String st)
 	{
 		

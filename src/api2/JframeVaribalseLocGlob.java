@@ -368,6 +368,11 @@ public class JframeVaribalseLocGlob extends JFrame {
 		btnStop = new JButton("stop");
 		btnStop.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnStop.setBounds(431, 543, 126, 31);
+		btnStop.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				stopAlgo();
+			}
+		});
 
 		lblNewLabel_1 = new JLabel("thread id:");
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.PLAIN, 14));
@@ -670,7 +675,8 @@ public class JframeVaribalseLocGlob extends JFrame {
 
 		newObj = new ManagerRealTimeData(threadId, tempGlobal, tempLocal, portNumberToserverChat);
 
-		btnStart.setEnabled(false);
+		cheangBtnStartOrUdate(false);
+		/*btnStart.setEnabled(false);
 		btnStart.setVisible(false);
 		btnUpdate.setEnabled(true);
 		btnUpdate.setVisible(true);
@@ -678,9 +684,21 @@ public class JframeVaribalseLocGlob extends JFrame {
 		comboBoxStrategy.setEnabled(false);
 		comboBoxDirection.setEnabled(false);
 		comboBoxMovingAvr.setEnabled(false);
-		comboBoxInterval.setEnabled(false);
+		comboBoxInterval.setEnabled(false);*/
 	}
 
+	private void cheangBtnStartOrUdate(boolean flag)
+	{
+		btnStart.setEnabled(flag);
+		btnStart.setVisible(flag);
+		btnUpdate.setEnabled(!flag);
+		btnUpdate.setVisible(!flag);
+		textFieldSymbol.setEnabled(flag);
+		comboBoxStrategy.setEnabled(flag);
+		comboBoxDirection.setEnabled(flag);
+		comboBoxMovingAvr.setEnabled(flag);
+		comboBoxInterval.setEnabled(flag);
+	}
 	private void updateAlgo(){
 		//get globalVar
 		int orderType = mapOrderType.get(stringsOrderType[comboBoxOrderType.getSelectedIndex()]);
@@ -758,7 +776,11 @@ public class JframeVaribalseLocGlob extends JFrame {
 
 	private void stopAlgo(){
 		if(newObj != null)
+		{
 			newObj.disconnect();
+			cheangBtnStartOrUdate(true);
+		}
+			
 	}
 
 	private int getIndexOfArray(String[] array, String value){

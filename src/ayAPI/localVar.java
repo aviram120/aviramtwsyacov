@@ -59,7 +59,28 @@ public class localVar {
 		this.extarPrice = extarPrice;
 		this.pe = pe;
 		this.barTriger = barTriger;
-	}	
+	}
+	public void updateObject(localVar tempLocal)
+	{
+		this.symbol = tempLocal.symbol;
+		this.strategy = tempLocal.strategy;
+		this.direction = tempLocal.direction;
+		this.movingAvrBar = tempLocal.movingAvrBar;
+		this.interval = tempLocal.interval;
+		this.minVolume = tempLocal.minVolume;
+		this.minBarSize = tempLocal.minBarSize;
+		this.maxBarSize = tempLocal.maxBarSize;
+		this.addCentToBreak = tempLocal.addCentToBreak;
+		this.numBarToCancelDeal = tempLocal.numBarToCancelDeal;
+		this.isAggressive = tempLocal.isAggressive;
+		this.maxTransactionsPerDay = tempLocal.maxTransactionsPerDay;
+		this.riskPerTransactionsDolars = tempLocal.riskPerTransactionsDolars;
+		this.maxRiskPerTransactionsDolars = tempLocal.maxRiskPerTransactionsDolars;
+		this.extarPrice = tempLocal.extarPrice;
+		this.pe = tempLocal.pe;
+		this.barTriger = tempLocal.barTriger;
+		
+	}
 	public localVar(String st)
 	{
 		System.out.println(st);

@@ -98,8 +98,6 @@ public class ManagerClient {
 		this.NUMBER_OF_RECORDS_BY_INTERVAL =  tempLocal.getInterval()*60/5;
 		arrFiveSec = new fiveSec[this.NUMBER_OF_RECORDS_BY_INTERVAL];
 		countResponseFromTws = 0;
-		
-		
 	}
 	public void addBarToGraph(barByInterval tempBar)
 	{//the function add the data to arrData that save the graph
@@ -156,8 +154,14 @@ public class ManagerClient {
 	}
 	//TODO lock vars globalVar, tempLocal with mutex
 	public void updateVars(globalVar tempGlobal, localVar tempLocal){
-		this.objGlobal = tempGlobal;
-		this.objLocal = tempLocal;
+		
+		Logger.info("update globalVar-befor update" + this.objGlobal.convertObjToJSON());
+		this.objGlobal.updateObject(tempGlobal);
+		Logger.info("update globalVar-after update" + this.objGlobal.convertObjToJSON());	
+		
+		Logger.info("update tempLocal-befor update" + this.objLocal.convertObjToJSON());
+		this.objLocal.updateObject(tempLocal);
+		Logger.info("update tempLocal-after update" + this.objLocal.convertObjToJSON());
 	}
 
 
@@ -416,12 +420,12 @@ public class ManagerClient {
 			Logger.info("add new order to list." + stLog);
 		}
 		
-		int idBroker = this.managerBroker.placeOrderByType(this.symbol, OrderToExec, orderType);
+		/*int idBroker = this.managerBroker.placeOrderByType(this.symbol, OrderToExec, orderType);
 		OrderToExec.setIdBrokerOfOrder(idBroker,orderType);//set the idBroker in to order
 		String stLogAfter = "after send the order to BROKR. " + stLog +
 							" , idBroker: " + idBroker;
 		//TODO - if idBroker==-1 => exption
-				
+				*/
 	}
 	private void canSearchForNewOrder()
 	{//the function decide if can set new order - if yes call to 'algoTrade' function
