@@ -73,6 +73,9 @@ public class ManagerRealTimeData implements EWrapper {
 		this.client.eDisconnect();
 	}
 
+	public void updateVars(globalVar tempGlobal, localVar tempLocal){
+		mngClient.updateVars(tempGlobal, tempLocal);		
+	}
 
 	public void getBarsByInterval()
 	{//the function make request from broker 
