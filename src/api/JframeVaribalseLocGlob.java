@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import chat.serverClient.ServerChat;
 
 import javax.swing.SwingConstants;
+import javax.swing.JTextArea;
 
 public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 	private HTTP httpRequest = new HTTP();
@@ -113,6 +114,7 @@ public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 	JButton btnOpenFile;
 	JButton btnSaveFile;
 	JButton btnUpdate;
+	JTextArea textAreaLogText;
 
 	String[] stringsOrderType = { "Market", "Stop limit" };//1,2
 	Map<String, Integer> mapOrderType = new HashMap<String, Integer>();
@@ -505,7 +507,10 @@ public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 		});
 		btnUpdate.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnUpdate.setBounds(295, 543, 126, 31);
-
+		
+		textAreaLogText = new JTextArea();
+		textAreaLogText.setBounds(10, 267, 214, 261);
+		
 		panel.setLayout(null);
 		panel.add(lblTimestopaddorder);
 		panel.add(lblTimecloseallorder);
@@ -563,7 +568,8 @@ public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 		panel.add(spinnerThreadId);
 		panel.add(btnOpenFile);
 		panel.add(btnSaveFile);			
-		panel.add(btnUpdate);
+		panel.add(btnUpdate);			
+		panel.add(textAreaLogText);
 	}
 
 	private void readFileToGUI(String fileName)
