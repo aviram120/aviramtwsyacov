@@ -12,7 +12,6 @@ import java.awt.image.DataBufferByte;
 import java.awt.Color;
 
 
-
 import java.awt.BorderLayout;
 
 import javax.swing.JFrame;
@@ -53,8 +52,9 @@ import org.slf4j.LoggerFactory;
 
 import chat.serverClient.ServerChat;
 
-import javax.swing.SwingConstants;
 import javax.swing.JTextArea;
+import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 	private HTTP httpRequest = new HTTP();
@@ -148,22 +148,20 @@ public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 	int threadId;
 	int portNumberToserverChat = 1500;
 	private ServerChat serverChat;
+	private JScrollPane scrollPaneLog;
 
 	public JframeVaribalseLocGlob() {
 		addWindowListener(this);
 		
 		if(authentication())
 		{
-			initialize();
-			
+			initialize();			
 			new Thread(){
 		        public void run(){
 		        	serverChat = new ServerChat(portNumberToserverChat);
 					serverChat.start();
 		        }
-		      }.start();
-		      
-			
+		      }.start();		      	
 		}
 			
 	}
@@ -207,7 +205,7 @@ public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 		modelTheradNumber = new SpinnerNumberModel(1, 1, 20, 1); 
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 600, 650);
+		setBounds(100, 100, 1300, 650);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
@@ -507,10 +505,14 @@ public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 		});
 		btnUpdate.setFont(new Font("Tahoma", Font.PLAIN, 14));
 		btnUpdate.setBounds(295, 543, 126, 31);
-		
+				
+		scrollPaneLog = new JScrollPane();
+		scrollPaneLog.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+		scrollPaneLog.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		textAreaLogText = new JTextArea();
-		textAreaLogText.setBounds(10, 267, 214, 261);
-		
+		scrollPaneLog.setBounds(596, 70, 652, 504);					
+		scrollPaneLog.setViewportView(textAreaLogText);
+				
 		panel.setLayout(null);
 		panel.add(lblTimestopaddorder);
 		panel.add(lblTimecloseallorder);
@@ -568,8 +570,8 @@ public class JframeVaribalseLocGlob extends JFrame implements  WindowListener{
 		panel.add(spinnerThreadId);
 		panel.add(btnOpenFile);
 		panel.add(btnSaveFile);			
-		panel.add(btnUpdate);			
-		panel.add(textAreaLogText);
+		panel.add(btnUpdate);
+		panel.add(scrollPaneLog);
 	}
 
 	private void readFileToGUI(String fileName)
